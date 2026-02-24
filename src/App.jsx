@@ -5,6 +5,7 @@ import Lenis from '@studio-freight/lenis'
 import { usePortfolioStore } from './store/portfolioStore'
 
 import HeroScene from './sections/HeroScene'
+import ExperienceSection from './sections/ExperienceSection'
 import ProjectsSection from './sections/ProjectsSection'
 import CertificatesSection from './sections/CertificatesSection'
 import BackgroundScene from './components/BackgroundScene'
@@ -253,6 +254,11 @@ export default function App() {
 
         {/* FIXED 3D BACKGROUND - Operates as the visual Tour Guide! (Z-index 50) */}
         <BackgroundScene />
+
+        {/* 1.5 Experience & Skills (Z-index 100) */}
+        <div style={{ position: 'relative', zIndex: 100 }}>
+          <ExperienceSection />
+        </div>
 
         {/* 2. Glassmorphic App Content (Z-index 100, robot flies UNDER this!) */}
         <div style={{ position: 'relative', zIndex: 100 }}>
