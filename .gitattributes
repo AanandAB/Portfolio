@@ -1,0 +1,2 @@
+*.glb -text -filter -diff -merge
+models/*.glb -text -filter -diff -merge
