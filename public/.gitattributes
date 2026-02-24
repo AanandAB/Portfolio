@@ -1,0 +1,3 @@
+# Force disable Git LFS filters natively on GitHub Pages because we compressed the models and don't need LFS anymore.
+# This prevents GitHub from replacing the binary payload with 133-byte text pointers.
+models/*.glb -filter -diff -merge -text

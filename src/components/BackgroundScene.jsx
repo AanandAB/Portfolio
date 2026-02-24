@@ -6,12 +6,12 @@ import { usePortfolioStore } from '../store/portfolioStore'
 import { Web, GitHub, RocketLaunch, DesignServices, Memory } from '@mui/icons-material'
 
 // Preload GLB assets using absolute root resolution!
-useGLTF.preload(import.meta.env.BASE_URL + 'models/island.glb')
-useGLTF.preload(import.meta.env.BASE_URL + 'models/cute_robot.glb')
+useGLTF.preload(import.meta.env.BASE_URL + 'scene/island.glb')
+useGLTF.preload(import.meta.env.BASE_URL + 'scene/cute_robot.glb')
 
 /* ─── Cute Robot Visitor Logic ─── */
 function RobotVisitor({ robotContainerRef }) {
-  const { scene } = useGLTF(import.meta.env.BASE_URL + 'models/cute_robot.glb')
+  const { scene } = useGLTF(import.meta.env.BASE_URL + 'scene/cute_robot.glb')
   const robotRef = useRef()
   const [taunt, setTaunt] = useState('')
 
@@ -356,7 +356,7 @@ const PROJECTS_3D = [
 
 /* ─── 3D Island & Camera Tour Logic ─── */
 function TourScene() {
-  const { scene } = useGLTF(import.meta.env.BASE_URL + 'models/island.glb')
+  const { scene } = useGLTF(import.meta.env.BASE_URL + 'scene/island.glb')
   const islandRef = useRef()
   const scrollProgress = usePortfolioStore((s) => s.scrollProgress)
   const vFocus = new THREE.Vector3()
