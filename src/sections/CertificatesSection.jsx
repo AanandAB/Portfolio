@@ -3,10 +3,10 @@ import { motion } from 'framer-motion'
 import { useRobotPush } from '../hooks/useRobotPush'
 
 const CERTIFICATES = [
-  { id: 'python', title: 'Python Expert', image: '/certs/python_cert.png', color: '#fbbf24' },
-  { id: 'salesforce', title: 'Salesforce Administrator', image: '/certs/salesforce_admin.jpeg', color: '#38bdf8' },
-  { id: 'cert3', title: 'Professional Certification', image: '/certs/cert3.png', color: '#c084fc' },
-  { id: 'cert4', title: 'Professional Certification', image: '/certs/cert4.png', color: '#34d399' },
+  { id: 'python', title: 'Python Expert', image: import.meta.env.BASE_URL + 'certs/python_cert.png', color: '#fbbf24' },
+  { id: 'salesforce', title: 'Salesforce Administrator', image: import.meta.env.BASE_URL + 'certs/salesforce_admin.jpeg', color: '#38bdf8' },
+  { id: 'cert3', title: 'Professional Certification', image: import.meta.env.BASE_URL + 'certs/cert3.png', color: '#c084fc' },
+  { id: 'cert4', title: 'Professional Certification', image: import.meta.env.BASE_URL + 'certs/cert4.png', color: '#34d399' },
 ]
 
 function CertificateCard({ cert }) {
