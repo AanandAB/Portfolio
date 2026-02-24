@@ -254,9 +254,9 @@ function RobotVisitor({ robotContainerRef }) {
       {/* Dynamic Particle System Tail */}
       {isMoving && (
         <Sparkles
-          count={120}         // Super dense particle cloud
+          count={80}          // Optimized particle count for better performance
           scale={2}           // Tighter spread closely behind the robot
-          size={6}            // Variable sizing
+          size={5}            // Variable sizing
           speed={0.6}         // High energy movement
           opacity={0.8}
           color={'#38bdf8'}   // Neon blue thruster trail
@@ -487,6 +487,7 @@ export default function BackgroundScene() {
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
         <Suspense fallback={null}>
           <Canvas
+            dpr={[1, 1.5]}    // KEY PERFORMANCE FIX: Cap pixel ratio to 1.5 for retina/mobile!
             eventSource={document.body}
             eventPrefix="client"
             camera={{ position: [0, 4, 12], fov: 50 }}
@@ -510,6 +511,7 @@ export default function BackgroundScene() {
       >
         <Suspense fallback={null}>
           <Canvas
+            dpr={[1, 1.5]}    // KEY PERFORMANCE FIX: Cap pixel ratio to 1.5 for retina/mobile!
             eventSource={document.body}
             eventPrefix="client"
             camera={{ position: [0, 4, 12], fov: 50 }}
