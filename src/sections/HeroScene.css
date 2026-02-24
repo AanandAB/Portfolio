@@ -1,0 +1,380 @@
+/* ─── HeroScene Styles ─── */
+
+.hero-scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* ── Canvas container ── */
+.hero-scene__canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ── Loading spinner ── */
+.hero-scene__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 2;
+}
+.hero-scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent; /* Let the Spline scene show through */
+}
+
+.hero-scene__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure the text is ALWAYS on top of the effects */
+.hero-scene__content {
+  position: relative;
+  z-index: 100; 
+  text-align: center;
+  color: #ffffff; /* Explicitly set text to white */
+}
+
+/* Ensure background effects don't block mouse events or visibility */
+.hero-scene__stars, 
+.hero-scene__beam {
+  position: absolute;
+  z-index: 1; 
+  pointer-events: none; /* Allows you to click 'through' them */
+}
+
+.hero-scene__title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 1rem 0;
+}
+
+.hero-scene__spinner-ring {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(56, 189, 248, 0.15);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: heroSpinnerRotate 0.8s linear infinite;
+}
+
+@keyframes heroSpinnerRotate {
+  to { transform: rotate(360deg); }
+}
+
+.hero-scene__spinner-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #64748b;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Overlay (text on top of canvas) ── */
+.hero-scene__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  pointer-events: none;
+}
+
+/* ── Starfield ── */
+.hero-scene__stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 20% 85%, rgba(56,189,248,0.3) 0%, transparent 100%),
+    radial-gradient(2px 2px at 65% 45%, rgba(192,132,252,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 90% 10%, rgba(244,114,182,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 90%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  pointer-events: none;
+  animation: starsTwinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes starsTwinkle {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* ── Neon beams ── */
+.hero-scene__beam {
+  position: absolute;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-scene__beam--1 {
+  top: 30%;
+  width: 60%;
+  left: 20%;
+  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  animation: heroBeam 4s ease-in-out infinite;
+}
+
+.hero-scene__beam--2 {
+  top: 65%;
+  width: 40%;
+  left: 30%;
+  background: linear-gradient(90deg, transparent, #c084fc, transparent);
+  animation: heroBeam 4s ease-in-out 2s infinite;
+}
+
+@keyframes heroBeam {
+  0%, 100% {
+    transform: translateX(-100%) skewY(-5deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ── Content ── */
+.hero-scene__content {
+  position: relative;
+  z-index: 100; /* Ensure text is above Spline */
+}
+
+
+.hero-scene__eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+  display: inline-block;
+  animation: heroFadeIn 0.8s ease-out 0.2s both;
+}
+
+.hero-scene__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(36px, 6vw, 80px);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  animation: heroFadeIn 0.8s ease-out 0.4s both;
+}
+
+.hero-scene__title-line1 {
+  background: linear-gradient(90deg, #e2e8f0 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.hero-scene__title-line2 {
+  background: linear-gradient(90deg, #c084fc 0%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  font-size: clamp(18px, 3vw, 36px);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.hero-scene__subtitle {
+  color: #64748b;
+  font-size: 18px;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  animation: heroFadeIn 0.8s ease-out 0.6s both;
+}
+
+/* ── Tech Chips ── */
+.hero-scene__chips {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: heroFadeIn 0.8s ease-out 0.8s both;
+}
+
+.hero-scene__chip-wrapper {
+  border-radius: 8px;
+}
+
+.hero-scene__chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: inherit;
+  background: transparent;
+  color: #64748b;
+  transition: color 0.2s;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-scene__chip:hover {
+  color: #e2e8f0;
+}
+
+.hero-scene__chip--cyan {
+  color: #38bdf8;
+}
+
+.hero-scene__chip--purple {
+  color: #c084fc;
+}
+
+.hero-scene__chip--pink {
+  color: #f472b6;
+}
+
+/* ── Scroll Hint ── */
+.hero-scene__scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: heroFloat 2s ease-in-out infinite;
+  pointer-events: auto;
+}
+
+.hero-scene__scroll-border {
+  border-radius: 20px;
+}
+
+.hero-scene__scroll-hint-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+  padding: 12px 24px;
+  background: transparent;
+  border-radius: inherit;
+}
+
+.hero-scene__scroll-arrow {
+  width: 24px;
+  height: 24px;
+  border-right: 2px solid #38bdf8;
+  border-bottom: 2px solid #38bdf8;
+  transform: rotate(45deg);
+  opacity: 0.6;
+}
+
+/* ── Animations ── */
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-8px);
+  }
+}
+
+/* ── Responsive ── */
+/* ── Attribution ── */
+.hero-scene__attribution {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  z-index: 11;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #374151;
+  pointer-events: auto;
+}
+
+.hero-scene__attribution a {
+  color: #4b5563;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.hero-scene__attribution a:hover {
+  color: #38bdf8;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-scene__title {
+    font-size: 36px;
+  }
+
+  .hero-scene__title-line2 {
+    font-size: 18px;
+  }
+
+  .hero-scene__subtitle {
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+
+  .hero-scene__chips {
+    gap: 8px;
+  }
+
+  .hero-scene__chip {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  .hero-scene__eyebrow {
+    font-size: 9px;
+    padding: 5px 14px;
+  }
+
+  .hero-scene__attribution {
+    font-size: 8px;
+  }
+}

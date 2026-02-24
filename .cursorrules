@@ -1,0 +1,64 @@
+# AANAND AB — FLOATING ISLANDS PORTFOLIO
+## Project Context
+This is a cinematic portfolio website for Aanand AB, Junior Software Engineer at Spectra Solutions,
+B.Tech Computer Science, University of Kerala.
+
+## Core Mechanic — Three Layers
+LAYER 1 (Hero): Sketchfab iframe embed — renders "Floating Island - Forgotten Shrine" 3D model with autospin. Full viewport hero section.
+LAYER 2 (zIndex 2): Canvas element drawing 240 sequential JPG frames — scrollProgress maps to frame index. Scroll scrubs the flythrough.
+LAYER 3 (zIndex 5): Fixed R3F Canvas — robot.glb companion that follows scroll, pointer-events:none.
+LAYER 4 (zIndex 10+): HTML overlays — glassmorphism island cards, HUD, CLI, drawers.
+
+## Assets
+- public/frames/ezgif-frame-001.jpg through ezgif-frame-240.jpg — 240 sequential flythrough frames
+- public/models/robot.glb — Flying robot companion (from robot_idle_animated.glb, 6.5MB)
+- Sketchfab embed: https://sketchfab.com/models/43be02c79a1c4092b774bacda18b2f34/embed (Floating Island - Forgotten Shrine)
+  CC-BY-4.0 license by Yosapat Panutyotin — credit required in footer
+
+## Tech Stack
+- React 18 + Vite
+- @react-three/fiber + @react-three/drei + three — for robot.glb ONLY (RobotCompanion component)
+- Lenis (@studio-freight/lenis) for smooth scroll
+- GSAP + ScrollTrigger for scroll-to-frame mapping
+- Framer Motion for HTML UI animations
+- Zustand for global state (scrollProgress, drawerOpen, cliOpen, easterEggActive, activeIsland)
+- Vanilla CSS for styling
+
+## Frame Scrubbing (not video scrubbing)
+- 240 JPG frames preloaded as Image objects on mount
+- Canvas element draws frames via requestAnimationFrame
+- ScrollTrigger onUpdate: frameIndex = Math.floor(progress * 239)
+- Loading overlay shows progress bar while frames load
+- Total scroll distance: 800vh
+
+## Island → Project Mapping (frame-based timestamps)
+Frame ~24-60  (progress 0.10-0.25) → CafePOSPro     screenPos: {x:'50%', y:'58%'}
+Frame ~66-102 (progress 0.275-0.425) → Theyyam App   screenPos: {x:'28%', y:'45%'}
+Frame ~105-144 (progress 0.44-0.60) → Knightly Web3  screenPos: {x:'68%', y:'50%'}
+Frame ~156-198 (progress 0.65-0.825) → Evently        screenPos: {x:'50%', y:'48%'}
+Frame ~204-240 (progress 0.85-1.0) → Bytebot AI      screenPos: {x:'38%', y:'40%'}
+
+## Flying Robot Behaviour
+- Rendered in its own fixed R3F Canvas, pointer-events:none, z-index:5
+- Loads public/models/robot.glb (has idle animation)
+- Waypoints array maps scrollProgress (0–1) to 3D positions + rotation
+- Speech bubbles via Drei Html appear when robot arrives at each island zone
+- Reacts to events: drawerOpen → spin. cliOpen → fly to screen-left. easterEggActive → celebrate
+
+## File Structure
+src/components/ — RobotCompanion.jsx (fixed R3F canvas with robot.glb)
+src/sections/   — HeroScene.jsx (Sketchfab embed hero), HeroScene.css
+src/store/      — portfolioStore.js (Zustand)
+src/data/       — islands.js
+src/App.jsx     — Root: Lenis, VideoScrollWorld (canvas frame scrub), ContactSection
+
+## Design Rules
+- Glassmorphism cards: background rgba(5,10,20,0.75), backdrop-filter blur(20px)
+- Accent colors per island: cyan #38bdf8, gold #fbbf24, purple #c084fc, pink #f472b6, green #34d399
+- Font: Space Grotesk (headings), Inter (body), JetBrains Mono (code/labels)
+- Body background: #03060f
+
+## Personal Info
+Name: Aanand AB | Role: Software Engineer @ Spectra Solutions | LinkedIn: linkedin.com/in/aanandab
+GitHub: github.com/AanandAB | Certs: Salesforce Admin, Platform Developer I, Agentforce Specialist
+Location: Kannur, Kerala, India
