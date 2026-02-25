@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront } from '@mui/icons-material'
+import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront, SportsEsports, Launch } from '@mui/icons-material'
 import { ISLANDS } from '../data/islands'
 import StarBorder from '../components/StarBorder'
 import { useRobotPush } from '../hooks/useRobotPush'
@@ -61,6 +61,7 @@ function ProjectCard({ project, index }) {
             {project.id === 'bytebot' && <RocketLaunch fontSize="large" />}
             {project.id === 'aios' && <Memory fontSize="large" />}
             {project.id === 'bitnexel' && <Storefront fontSize="large" />}
+            {project.id === 'tictac' && <SportsEsports fontSize="large" />}
           </div>
 
           <h3 className="project-card__title" style={{ textShadow: `0 0 10px ${project.accentColor}80` }}>
@@ -98,19 +99,34 @@ function ProjectCard({ project, index }) {
             ))}
           </ul>
 
-          {project.github && (
-            <motion.a 
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="project-card__link"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              style={{ background: `${project.accentColor}20`, borderColor: `${project.accentColor}60`, color: project.accentColor }}
-            >
-              View Source
-            </motion.a>
-          )}
+          <div className="project-card__links">
+            {project.github && (
+              <motion.a 
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="project-card__link"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ background: `${project.accentColor}20`, borderColor: `${project.accentColor}60`, color: project.accentColor }}
+              >
+                <GitHub fontSize="small" style={{ marginRight: '8px' }} /> Source
+              </motion.a>
+            )}
+            {project.live && (
+              <motion.a 
+                href={project.live}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="project-card__link project-card__link--live"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ background: project.accentColor, color: '#000' }}
+              >
+                <Launch fontSize="small" style={{ marginRight: '8px' }} /> Live Demo
+              </motion.a>
+            )}
+          </div>
         </div>
       </StarBorder>
     </motion.div>
@@ -300,8 +316,33 @@ export default function ProjectsSection() {
           text-decoration: none;
           font-weight: 600;
           border: 1px solid transparent;
-          margin-top: auto;
           align-self: flex-start;
+        }
+
+        .project-card__links {
+          display: flex;
+          gap: 12px;
+          margin-top: auto;
+        }
+
+        .project-card__link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 16px;
+          border-radius: 8px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          text-decoration: none;
+          font-weight: 700;
+          border: 1px solid transparent;
+          transition: all 0.2s;
+        }
+
+        .project-card__link--live {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .project-card__status-badges {

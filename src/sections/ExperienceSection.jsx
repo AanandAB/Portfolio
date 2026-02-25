@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useRobotPush } from '../hooks/useRobotPush'
+import StarBorder from '../components/StarBorder'
 
 // Skills data mapped from user request
 const SKILLS = [
@@ -56,11 +57,6 @@ export default function ExperienceSection() {
         months--
       }
 
-      if (months <= 0) {
-        setDuration('Just Started')
-        return
-      }
-
       const yrs = Math.floor(months / 12)
       const mths = months % 12
 
@@ -72,7 +68,7 @@ export default function ExperienceSection() {
     }
 
     calcDuration()
-    const intval = setInterval(calcDuration, 1000 * 60 * 60 * 24) // update daily if tab left open
+    const intval = setInterval(calcDuration, 1000 * 60 * 60 * 24)
     return () => clearInterval(intval)
   }, [])
 
@@ -91,53 +87,65 @@ export default function ExperienceSection() {
             Professional <span className="text-gradient">Experience</span>
           </h2>
           <p className="exp-subtitle">
-            Forging enterprise solutions and pushing the boundaries of what's possible.
+            Forging enterprise solutions and pushing boundaries.
           </p>
+        </motion.div>
+
+        {/* Vibe Coding Philosophy (Banner) */}
+        <motion.div 
+          className="vibe-banner"
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+        >
+          <div className="vibe-icon-wrap">
+            <span className="vibe-icon">⚡</span>
+          </div>
+          <div className="vibe-content">
+            <h3 className="vibe-banner__title">Vibe Coding Philosophy</h3>
+            <p className="vibe-banner__text">
+              I architect my complex projects like <span className="highlight">AIOS</span> and 
+              <span className="highlight"> Bytebot</span> using advanced <strong>'Vibe Coding'</strong> workflows 
+              — directing AI agents to generate robust logic through high-level orchestration.
+            </p>
+          </div>
         </motion.div>
 
         {/* Experience Card */}
         <motion.div 
-          className="exp-card-wrap"
+          className="exp-card-outer"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          style={{ '--accent': '#38bdf8' }}
         >
-          <div className="exp-card">
-            <div className="exp-card__glow-bg" />
-            <div className="exp-card__content">
-              <div className="exp-role-header">
-                <div>
-                  <h3 className="exp-role">Software Engineer</h3>
-                  <h4 className="exp-company">Spectra Solution</h4>
+          <StarBorder color="#38bdf8" duration={6}>
+            <div className="exp-card">
+              <div className="exp-card__glow-bg" />
+              <div className="exp-card__content">
+                <div className="exp-role-header">
+                  <div>
+                    <h3 className="exp-role">Software Engineer</h3>
+                    <h4 className="exp-company">Spectra Solution</h4>
+                  </div>
+                  <div className="exp-date-badge">
+                    <span className="exp-date">Jul 2024 — Present</span>
+                    <span className="exp-duration">{duration}</span>
+                  </div>
                 </div>
-                <div className="exp-date-badge">
-                  <span className="exp-date">Jul 2024 — Present</span>
-                  <span className="exp-duration">{duration}</span>
-                </div>
-              </div>
 
-              <div className="exp-vibe-coding">
-                <span className="vibe-icon">⚡</span>
-                <p>
-                  <strong>Vibe Coding:</strong> Successfully architecting and implementing 
-                  intelligent systems. The current integrations like <span className="highlight">AIOS</span> and 
-                  <span className="highlight"> Bytebot</span> are relatively complex, 
-                  so I orchestrate the development using advanced 'Vibe Coding' workflows 
-                  — directing AI agents to precisely generate robust, future-proof logic.
-                </p>
-              </div>
 
-              <div className="exp-skills-section">
-                <h5 className="exp-skills-title">Salesforce Expertise</h5>
-                <div className="exp-skills-grid">
-                  {SKILLS.map(skill => (
-                    <SkillBadge key={skill.id} skill={skill} />
-                  ))}
+
+                <div className="exp-skills-section">
+                  <h5 className="exp-skills-title">Salesforce Expertise</h5>
+                  <div className="exp-skills-grid">
+                    {SKILLS.map(skill => (
+                      <SkillBadge key={skill.id} skill={skill} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </StarBorder>
         </motion.div>
 
       </div>
@@ -182,20 +190,68 @@ export default function ExperienceSection() {
           -webkit-text-fill-color: transparent;
         }
 
-        /* Card Wrap */
-        .exp-card-wrap {
-          border-radius: 20px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
-          padding: 1px;
+        /* Vibe Banner */
+        .vibe-banner {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          background: rgba(192, 132, 252, 0.08);
+          border: 1px solid rgba(192, 132, 252, 0.15);
+          border-left: 4px solid #c084fc;
+          padding: 24px;
+          border-radius: 12px;
+          margin-bottom: 40px;
+          backdrop-filter: none;
+        }
+
+        .vibe-icon-wrap {
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(192, 132, 252, 0.1);
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .vibe-icon {
+          font-size: 24px;
+        }
+
+        .vibe-banner__title {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 18px;
+          font-weight: 700;
+          color: #fff;
+          margin: 0 0 4px 0;
+        }
+
+        .vibe-banner__text {
+          margin: 0;
+          font-family: 'Inter', sans-serif;
+          font-size: 15px;
+          color: #cbd5e1;
+          line-height: 1.5;
+        }
+
+        .vibe-banner .highlight {
+          color: #c084fc;
+          font-weight: 600;
+        }
+
+        /* Card Outer */
+        .exp-card-outer {
           position: relative;
+          border-radius: 20px;
+          overflow: hidden;
           box-shadow: 0 20px 80px -20px rgba(56, 189, 248, 0.15);
         }
 
         .exp-card {
-          border-radius: 20px;
-          background: rgba(10, 15, 25, 0.7);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          border-radius: inherit;
+          background: rgba(2, 6, 23, 0.15); /* Significantly more transparent */
+          border: 1px solid rgba(56, 189, 248, 0.1);
           overflow: hidden;
           position: relative;
           padding: 40px;
@@ -204,7 +260,7 @@ export default function ExperienceSection() {
         .exp-card__glow-bg {
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.1), transparent 60%);
+          background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.1), transparent 70%);
           pointer-events: none;
         }
 
@@ -213,15 +269,14 @@ export default function ExperienceSection() {
           z-index: 2;
         }
 
-        /* Header layout inside card */
         .exp-role-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           flex-wrap: wrap;
           gap: 20px;
-          margin-bottom: 30px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
+          margin-bottom: 40px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
           padding-bottom: 30px;
         }
 
@@ -263,54 +318,15 @@ export default function ExperienceSection() {
           font-size: 13px;
           color: #34d399;
           font-weight: 600;
-          letter-spacing: 0.05em;
           text-transform: uppercase;
         }
 
         @media (max-width: 600px) {
-          .exp-role-header {
-            flex-direction: column;
-          }
-          .exp-date-badge {
-            align-items: flex-start;
-            width: 100%;
-          }
+          .exp-role-header { flex-direction: column; }
+          .exp-date-badge { align-items: flex-start; width: 100%; }
+          .vibe-banner { flex-direction: column; align-items: flex-start; }
         }
 
-        /* Vibe Coding Section */
-        .exp-vibe-coding {
-          display: flex;
-          gap: 16px;
-          background: rgba(192, 132, 252, 0.05);
-          border-left: 3px solid #c084fc;
-          padding: 24px;
-          border-radius: 0 12px 12px 0;
-          margin-bottom: 40px;
-        }
-
-        .vibe-icon {
-          font-size: 24px;
-          line-height: 1;
-        }
-
-        .exp-vibe-coding p {
-          margin: 0;
-          font-family: 'Inter', sans-serif;
-          font-size: 15px;
-          color: #cbd5e1;
-          line-height: 1.6;
-        }
-
-        .exp-vibe-coding strong {
-          color: #fff;
-        }
-
-        .exp-vibe-coding .highlight {
-          color: #c084fc;
-          font-weight: 600;
-        }
-
-        /* Skills */
         .exp-skills-title {
           font-family: 'Space Grotesk', sans-serif;
           font-size: 18px;
@@ -325,17 +341,15 @@ export default function ExperienceSection() {
           gap: 12px;
         }
 
-        /* Single Skill Badge */
         .skill-badge-wrap {
           border-radius: 8px;
           background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
           padding: 1px;
           position: relative;
-          cursor: default;
         }
 
         .skill-badge {
-          background: rgba(10, 15, 25, 0.8);
+          background: rgba(10, 15, 25, 0.4);
           padding: 10px 18px;
           border-radius: 8px;
           position: relative;
@@ -346,8 +360,7 @@ export default function ExperienceSection() {
           position: absolute;
           inset: 0;
           background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 0%), var(--accent), transparent 60%);
-          opacity: 0.15;
-          mix-blend-mode: screen;
+          opacity: 0.12;
           pointer-events: none;
         }
 
@@ -357,9 +370,10 @@ export default function ExperienceSection() {
           font-family: 'JetBrains Mono', monospace;
           font-size: 13px;
           color: #e2e8f0;
-          font-weight: 500;
         }
       `}</style>
     </section>
   )
 }
+
+
