@@ -39,6 +39,7 @@ export const ISLANDS = [
     headline: 'Decentralised chess game on the blockchain — Final Year Project',
     features: ['Smart Contract Moves', 'Decentralised Gameplay', 'On-chain Game History'],
     description: 'A blockchain-powered decentralised chess game built as a final year B.Tech project. Every move is recorded on-chain for transparent, trustless gameplay.',
+    status: ['Work in Progress', 'Vibe Coded'],
     robotMessage: '♟️ Knightly — decentralised chess on blockchain',
   },
   {
@@ -67,6 +68,7 @@ export const ISLANDS = [
     headline: 'Forked self-adaptive multi-agent planning and execution system',
     features: ['Self-Modifying Architecture', 'Tiny Recursive Model', 'Multi-Agent Collaboration'],
     description: 'A forked multi-agent AI system capable of self-modification and recursive task planning. Features autonomous collaboration between multiple AI agents.',
+    status: ['Work in Progress', 'Vibe Coded', 'Forked from ByteBot Main'],
     robotMessage: '🤖 Bytebot — AI multi-agent system',
   },
   {
@@ -81,7 +83,29 @@ export const ISLANDS = [
     headline: 'Intelligent computer operating system driven entirely by local AI agents',
     features: ['GUI Vision Control', 'Zero Cloud Independence', 'On-Device Self-Training'],
     description: 'AIOS does not run on your computer. AIOS IS your computer. It sees your screen, spawns specialist agents to do complex work, trains itself on every interaction, and is intimately aware of your hardware — all locally in real time.',
+    status: ['Just Trying It Out'],
     robotMessage: '🧠 AIOS — deeply integrated AI Operating System',
+  },
+  {
+    id: 'bitnexel',
+    name: 'Bitnexel — CafePOSPro SPA',
+    videoEnter: 9.8,
+    videoExit: 11.0,
+    screenPos: { x: '45%', y: '52%' },
+    accentColor: '#06b6d4',
+    github: null,
+    tags: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Radix UI', 'Framer Motion'],
+    headline: 'Modern B2B marketing website for a restaurant POS system',
+    features: [
+      'Interactive 3D Hero with Analytics Dashboard',
+      'QR Code Ordering — 40% Reduced Wait Times',
+      'Real-time Inventory & Kitchen Display System',
+      'Three-tier Pricing with Monthly/Yearly Toggle',
+      'WCAG AA Compliant & SEO Optimised',
+    ],
+    description: 'Bitnexel is a high-converting, minimalistic SPA showcasing CafePOSPro — a comprehensive restaurant management system designed for Indian restaurants, cafes & QSR. Features digital payments (UPI, cards, wallets), staff management, business analytics, and advanced Framer Motion animations.',
+    status: null,
+    robotMessage: '🍽️ Bitnexel — premium restaurant POS marketing site',
   },
 ]
 

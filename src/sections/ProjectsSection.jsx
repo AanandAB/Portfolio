@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Web, GitHub, RocketLaunch, DesignServices, Memory } from '@mui/icons-material'
+import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront } from '@mui/icons-material'
 import { ISLANDS } from '../data/islands'
 import StarBorder from '../components/StarBorder'
 import { useRobotPush } from '../hooks/useRobotPush'
@@ -60,12 +60,23 @@ function ProjectCard({ project, index }) {
             {project.id === 'evently' && <DesignServices fontSize="large" />}
             {project.id === 'bytebot' && <RocketLaunch fontSize="large" />}
             {project.id === 'aios' && <Memory fontSize="large" />}
+            {project.id === 'bitnexel' && <Storefront fontSize="large" />}
           </div>
 
           <h3 className="project-card__title" style={{ textShadow: `0 0 10px ${project.accentColor}80` }}>
             {project.name}
           </h3>
           <p className="project-card__headline">{project.headline}</p>
+
+          {project.status && project.status.length > 0 && (
+            <div className="project-card__status-badges">
+              {project.status.map(s => (
+                <span key={s} className="project-card__status-badge" style={{ borderColor: `${project.accentColor}60`, color: project.accentColor }}>
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="project-card__tags">
             {project.tags.map(tag => (
@@ -291,6 +302,32 @@ export default function ProjectsSection() {
           border: 1px solid transparent;
           margin-top: auto;
           align-self: flex-start;
+        }
+
+        .project-card__status-badges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+
+        .project-card__status-badge {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 10px;
+          padding: 4px 12px;
+          border-radius: 100px;
+          border: 1px solid;
+          background: rgba(255, 255, 255, 0.04);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          font-weight: 600;
+          backdrop-filter: blur(4px);
+          animation: statusPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
         }
       `}</style>
     </section>
