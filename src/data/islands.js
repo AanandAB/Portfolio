@@ -144,6 +144,12 @@ export const CERTS = [
     issuer: 'Salesforce',
     color: '#c084fc',
   },
+  {
+    id: 'data-cloud',
+    name: 'Data Cloud Consultant',
+    issuer: 'Salesforce',
+    color: '#10b981',
+  },
 ]
 
 // Robot waypoints for scroll-based flight
