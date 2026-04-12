@@ -345,6 +345,35 @@
   color: #38bdf8;
 }
 
+/* ── Scroll CTA ── */
+.hero-scene__scroll-cta {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-scene__scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, #38bdf8, transparent);
+  animation: scrollLinePulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollLinePulse {
+  0%, 100% { opacity: 0.4; height: 40px; }
+  50% { opacity: 1; height: 50px; }
+}
+
+.hero-scene__scroll-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #475569;
+  text-transform: uppercase;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .hero-scene__title {

@@ -1,16 +1,19 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, lazy, Suspense } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from '@studio-freight/lenis'
 import { usePortfolioStore } from './store/portfolioStore'
 
+// Eagerly load hero (above-fold critical path)
 import HeroScene from './sections/HeroScene'
-import ExperienceSection from './sections/ExperienceSection'
-import ProjectsSection from './sections/ProjectsSection'
-import CertificatesSection from './sections/CertificatesSection'
-import BackgroundScene from './components/BackgroundScene'
 import CustomCursor from './components/CustomCursor'
 import { useRobotPush } from './hooks/useRobotPush'
+
+// Lazy load heavy below-fold components
+const BackgroundScene = lazy(() => import('./components/BackgroundScene'))
+const ExperienceSection = lazy(() => import('./sections/ExperienceSection'))
+const ProjectsSection = lazy(() => import('./sections/ProjectsSection'))
+const CertificatesSection = lazy(() => import('./sections/CertificatesSection'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -189,10 +192,8 @@ function ContactSection() {
 /* ─── Track Full Page Scroll and Drive Zustand State ─── */
 function ScrollTracker() {
   const setScrollProgress = usePortfolioStore((s) => s.setScrollProgress)
-  const containerRef = useRef(null)
 
   useEffect(() => {
-    // We bind a ScrollTrigger to the document root to update Progress 0...1
     const trigger = ScrollTrigger.create({
       trigger: document.body,
       start: 'top top',
@@ -206,6 +207,22 @@ function ScrollTracker() {
   }, [setScrollProgress])
 
   return null
+}
+
+/* ─── Minimal loading fallback ─── */
+function SectionFallback() {
+  return (
+    <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{
+        width: '32px', height: '32px',
+        border: '2px solid rgba(56,189,248,0.15)',
+        borderTopColor: '#38bdf8',
+        borderRadius: '50%',
+        animation: 'spin 0.7s linear infinite',
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
 }
 
 /* ─── App: Root Component ─── */
@@ -238,39 +255,40 @@ export default function App() {
       <ScrollTracker />
       <CustomCursor color="#38bdf8" />
 
-      {/* FOREGROUND HTML OVERLAYS */}
-      {/* 
-        We use varying z-indexes here. 
-        BackgroundScene is at z-index 50.
-        Therefore, to put something UNDER the robot (like Hero Scene), use z-index < 50.
-        To put something OVER the robot (like glassmorphic Cards), use z-index > 50.
-      */}
       <div style={{ position: 'relative' }}>
         
-        {/* 1. Transparent Hero Scene Spacer (Z-index 10, robot flies OVER this!) */}
+        {/* 1. Hero Scene (eager — above fold) */}
         <div style={{ position: 'relative', zIndex: 10 }}>
           <HeroScene />
         </div>
 
-        {/* FIXED 3D BACKGROUND - Operates as the visual Tour Guide! (Z-index 50) */}
-        <BackgroundScene />
+        {/* FIXED 3D BACKGROUND - lazy loaded */}
+        <Suspense fallback={null}>
+          <BackgroundScene />
+        </Suspense>
 
-        {/* 1.5 Experience & Skills (Z-index 100) */}
+        {/* 1.5 Experience & Skills */}
         <div style={{ position: 'relative', zIndex: 100 }}>
-          <ExperienceSection />
+          <Suspense fallback={<SectionFallback />}>
+            <ExperienceSection />
+          </Suspense>
         </div>
 
-        {/* 2. Glassmorphic App Content (Z-index 100, robot flies UNDER this!) */}
+        {/* 2. Projects */}
         <div style={{ position: 'relative', zIndex: 100 }}>
-          <ProjectsSection />
+          <Suspense fallback={<SectionFallback />}>
+            <ProjectsSection />
+          </Suspense>
         </div>
 
-        {/* 2.5. Certificates (Z-index 100) */}
+        {/* 2.5. Certificates */}
         <div style={{ position: 'relative', zIndex: 100 }}>
-          <CertificatesSection />
+          <Suspense fallback={<SectionFallback />}>
+            <CertificatesSection />
+          </Suspense>
         </div>
 
-        {/* 3. Transparent Contact Section (Z-index 100) */}
+        {/* 3. Contact Section (lightweight, stays eager) */}
         <div style={{ position: 'relative', zIndex: 100 }}>
           <ContactSection />
         </div>

@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import './HeroScene.css'
 import DecryptedText from '../components/DecryptedText'
 import StarBorder from '../components/StarBorder'
@@ -18,31 +19,44 @@ function PushableChip({ children, duration, color, className }) {
 }
 
 export default function HeroScene() {
-  return (
-    <section className="hero-scene" id="hero">
-      <div className="hero-scene__overlay">
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start']
+  })
 
-        {/* Starfield background - ensure z-index is low in CSS */}
-        <div className="hero-scene__stars" />
+  // Parallax layers: title moves up faster, subtitle slower, chips slowest
+  const titleY = useTransform(scrollYProgress, [0, 1], [0, -120])
+  const subtitleY = useTransform(scrollYProgress, [0, 1], [0, -60])
+  const chipsY = useTransform(scrollYProgress, [0, 1], [0, -30])
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+  const starsScale = useTransform(scrollYProgress, [0, 1], [1, 1.3])
+
+  return (
+    <section className="hero-scene" id="hero" ref={heroRef}>
+      <motion.div className="hero-scene__overlay" style={{ opacity: overlayOpacity }}>
+
+        {/* Starfield background with parallax zoom */}
+        <motion.div className="hero-scene__stars" style={{ scale: starsScale }} />
 
         {/* Neon beam animations */}
         <div className="hero-scene__beam hero-scene__beam--1" />
         <div className="hero-scene__beam hero-scene__beam--2" />
 
-        {/* Added explicit zIndex and position to ensure visibility */}
+        {/* Content with staggered parallax depths */}
         <div className="hero-scene__content" style={{ position: 'relative', zIndex: 10 }}>
           {/* Eyebrow */}
-          <div className="hero-scene__eyebrow">
+          <motion.div className="hero-scene__eyebrow" style={{ y: titleY }}>
             <DecryptedText 
               text="✦ PORTFOLIO  · 3D EXPERIENCE" 
               speed={40} 
               maxIterations={12} 
               sequential 
             />
-          </div>
+          </motion.div>
 
           {/* Main heading */}
-          <h1 className="hero-scene__title">
+          <motion.h1 className="hero-scene__title" style={{ y: titleY }}>
             <span className="hero-scene__title-line1">
               <DecryptedText
                 text="AANAND AB"
@@ -60,28 +74,39 @@ export default function HeroScene() {
                 sequential
               />
             </span>
-          </h1>
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="hero-scene__subtitle">
+          <motion.p className="hero-scene__subtitle" style={{ y: subtitleY }}>
             <DecryptedText 
               text="Scroll to explore my projects scattered across the island." 
               speed={50} 
               maxIterations={10} 
               sequential 
             />
-          </p>
+          </motion.p>
 
           {/* Tech chips */}
-          <div className="hero-scene__chips">
+          <motion.div className="hero-scene__chips" style={{ y: chipsY }}>
             <PushableChip color="#38bdf8" duration={4} className="hero-scene__chip--cyan">React</PushableChip>
             <PushableChip color="#c084fc" duration={5} className="hero-scene__chip--purple">Three.js</PushableChip>
             <PushableChip color="#f472b6" duration={4.5} className="hero-scene__chip--pink">Salesforce</PushableChip>
             <PushableChip color="#94a3b8" duration={4} className="">Python · AI</PushableChip>
             <PushableChip color="#38bdf8" duration={5.5} className="hero-scene__chip--cyan">Web3</PushableChip>
-          </div>
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div 
+            className="hero-scene__scroll-cta"
+            style={{ y: chipsY }}
+            animate={{ y: [0, -8, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          >
+            <div className="hero-scene__scroll-line" />
+            <span className="hero-scene__scroll-text">SCROLL</span>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

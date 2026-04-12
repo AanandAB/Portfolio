@@ -1,13 +1,9 @@
-import React, { useRef, Suspense, useState, useEffect } from 'react'
+import React, { useRef, Suspense, useState, useEffect, memo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, Environment, Html, Float, Sparkles } from '@react-three/drei'
+import { useGLTF, Html, Float, Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import { usePortfolioStore } from '../store/portfolioStore'
 import { Web, GitHub, RocketLaunch, DesignServices, Memory } from '@mui/icons-material'
-
-// Preload GLB assets using absolute root resolution!
-useGLTF.preload(import.meta.env.BASE_URL + 'scene/island.bin')
-useGLTF.preload(import.meta.env.BASE_URL + 'scene/cute_robot.bin')
 
 /* ─── Cute Robot Visitor Logic ─── */
 function RobotVisitor({ robotContainerRef }) {
@@ -63,7 +59,7 @@ function RobotVisitor({ robotContainerRef }) {
     }
     
     // Slight delay so the scene loads first
-    setTimeout(fetchContext, 2000)
+    setTimeout(fetchContext, 4000)
   }, [])
 
   const handleInteract = (e) => {
@@ -254,13 +250,13 @@ function RobotVisitor({ robotContainerRef }) {
       {/* Dynamic Particle System Tail */}
       {isMoving && (
         <Sparkles
-          count={80}          // Optimized particle count for better performance
-          scale={2}           // Tighter spread closely behind the robot
-          size={5}            // Variable sizing
-          speed={0.6}         // High energy movement
-          opacity={0.8}
-          color={'#38bdf8'}   // Neon blue thruster trail
-          noise={15}          // Aggressive chaotic physics-based drift
+          count={35}
+          scale={2}
+          size={4}
+          speed={0.5}
+          opacity={0.7}
+          color={'#38bdf8'}
+          noise={12}
         />
       )}
       <primitive 
@@ -487,11 +483,11 @@ export default function BackgroundScene() {
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
         <Suspense fallback={null}>
           <Canvas
-            dpr={[1, 1.5]}    // KEY PERFORMANCE FIX: Cap pixel ratio to 1.5 for retina/mobile!
+            dpr={[1, 1.5]}
             eventSource={document.body}
             eventPrefix="client"
             camera={{ position: [0, 4, 12], fov: 50 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+            gl={{ antialias: false, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }}
             style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
           >
             <ambientLight intensity={0.6} />
@@ -511,11 +507,11 @@ export default function BackgroundScene() {
       >
         <Suspense fallback={null}>
           <Canvas
-            dpr={[1, 1.5]}    // KEY PERFORMANCE FIX: Cap pixel ratio to 1.5 for retina/mobile!
+            dpr={[1, 1.5]}
             eventSource={document.body}
             eventPrefix="client"
             camera={{ position: [0, 4, 12], fov: 50 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+            gl={{ antialias: false, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }}
             style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
           >
             <ambientLight intensity={0.6} />

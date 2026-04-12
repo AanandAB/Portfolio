@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { useRobotPush } from '../hooks/useRobotPush'
 import StarBorder from '../components/StarBorder'
 
@@ -15,7 +15,35 @@ const SKILLS = [
   { id: 'agentforce', name: 'Agentforce', color: '#2dd4bf' },
 ]
 
-function SkillBadge({ skill }) {
+/* ─── Animated Counter ─── */
+function AnimatedCounter({ value, suffix = '' }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-50px' })
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!isInView) return
+    let start = 0
+    const end = parseInt(value)
+    if (start === end) return
+    const duration = 1500
+    const increment = end / (duration / 16)
+    const timer = setInterval(() => {
+      start += increment
+      if (start >= end) {
+        setCount(end)
+        clearInterval(timer)
+      } else {
+        setCount(Math.ceil(start))
+      }
+    }, 16)
+    return () => clearInterval(timer)
+  }, [isInView, value])
+
+  return <span ref={ref}>{count}{suffix}</span>
+}
+
+function SkillBadge({ skill, index }) {
   const glowRef = useRef(null)
   const { wrapperRef, innerRef } = useRobotPush({ 
     pushRadius: 150, 
@@ -28,14 +56,30 @@ function SkillBadge({ skill }) {
     <motion.div
       ref={wrapperRef}
       className="skill-badge-wrap"
-      initial={{ opacity: 0, scale: 0.8 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
-      whileHover={{ y: -5, scale: 1.05 }}
+      initial={{ opacity: 0, scale: 0.7, y: 20 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, margin: '-30px' }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 120, 
+        damping: 14, 
+        delay: index * 0.06 
+      }}
+      whileHover={{ 
+        y: -6, 
+        scale: 1.08,
+        transition: { type: 'spring', stiffness: 300, damping: 12 }
+      }}
       style={{ '--accent': skill.color }}
     >
       <div ref={innerRef} className="skill-badge">
         <div ref={glowRef} className="skill-badge__glow" />
+        <motion.span 
+          className="skill-badge__dot" 
+          style={{ background: skill.color }}
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ repeat: Infinity, duration: 2, delay: index * 0.2 }}
+        />
         <span className="skill-badge__text">{skill.name}</span>
       </div>
     </motion.div>
@@ -44,6 +88,14 @@ function SkillBadge({ skill }) {
 
 export default function ExperienceSection() {
   const [duration, setDuration] = useState('')
+  const sectionRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'center center']
+  })
+  const lineWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.4], [0, 1])
+  const headerY = useTransform(scrollYProgress, [0, 0.4], [30, 0])
 
   useEffect(() => {
     const calcDuration = () => {
@@ -73,34 +125,52 @@ export default function ExperienceSection() {
   }, [])
 
   return (
-    <section id="experience" className="exp-section">
+    <section id="experience" className="exp-section" ref={sectionRef}>
       <div className="exp-container">
         
         {/* Header */}
         <motion.div 
           className="exp-header"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
+          style={{ opacity: headerOpacity, y: headerY }}
         >
+          <motion.div
+            className="exp-header__eyebrow"
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="exp-header__dot" />
+            CAREER
+          </motion.div>
           <h2 className="exp-title">
             Professional <span className="text-gradient">Experience</span>
           </h2>
           <p className="exp-subtitle">
             Forging enterprise solutions and pushing boundaries.
           </p>
+          <motion.div className="exp-header__line" style={{ width: lineWidth }} />
         </motion.div>
 
         {/* Vibe Coding Philosophy (Banner) */}
         <motion.div 
           className="vibe-banner"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, x: -40, rotateY: -5 }}
+          whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ type: 'spring', stiffness: 70, damping: 16 }}
+          whileHover={{ 
+            scale: 1.01,
+            borderColor: 'rgba(192, 132, 252, 0.35)',
+            transition: { duration: 0.2 }
+          }}
         >
-          <div className="vibe-icon-wrap">
+          <motion.div 
+            className="vibe-icon-wrap"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+          >
             <span className="vibe-icon">⚡</span>
-          </div>
+          </motion.div>
           <div className="vibe-content">
             <h3 className="vibe-banner__title">Vibe Coding Philosophy</h3>
             <p className="vibe-banner__text">
@@ -114,32 +184,55 @@ export default function ExperienceSection() {
         {/* Experience Card */}
         <motion.div 
           className="exp-card-outer"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 60, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ type: 'spring', stiffness: 60, damping: 16 }}
         >
           <StarBorder color="#38bdf8" duration={6}>
             <div className="exp-card">
               <div className="exp-card__glow-bg" />
               <div className="exp-card__content">
                 <div className="exp-role-header">
-                  <div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                  >
                     <h3 className="exp-role">Software Engineer</h3>
                     <h4 className="exp-company">Spectra Solution</h4>
-                  </div>
-                  <div className="exp-date-badge">
+                  </motion.div>
+                  <motion.div 
+                    className="exp-date-badge"
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    whileHover={{ 
+                      scale: 1.03,
+                      borderColor: 'rgba(56, 189, 248, 0.2)',
+                      transition: { duration: 0.15 }
+                    }}
+                  >
                     <span className="exp-date">Jul 2024 — Present</span>
                     <span className="exp-duration">{duration}</span>
-                  </div>
+                  </motion.div>
                 </div>
 
-
-
                 <div className="exp-skills-section">
-                  <h5 className="exp-skills-title">Salesforce Expertise</h5>
+                  <motion.h5 
+                    className="exp-skills-title"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    Salesforce Expertise
+                  </motion.h5>
                   <div className="exp-skills-grid">
-                    {SKILLS.map(skill => (
-                      <SkillBadge key={skill.id} skill={skill} />
+                    {SKILLS.map((skill, i) => (
+                      <SkillBadge key={skill.id} skill={skill} index={i} />
                     ))}
                   </div>
                 </div>
@@ -166,6 +259,39 @@ export default function ExperienceSection() {
         .exp-header {
           text-align: center;
           margin-bottom: 64px;
+        }
+
+        .exp-header__eyebrow {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11px;
+          color: #34d399;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .exp-header__dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #34d399;
+          animation: expDotPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes expDotPulse {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .exp-header__line {
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #34d399, #38bdf8, transparent);
+          margin: 24px auto 0;
+          border-radius: 2px;
         }
 
         .exp-title {
@@ -202,6 +328,8 @@ export default function ExperienceSection() {
           border-radius: 12px;
           margin-bottom: 40px;
           backdrop-filter: none;
+          cursor: default;
+          transition: border-color 0.3s;
         }
 
         .vibe-icon-wrap {
@@ -304,6 +432,8 @@ export default function ExperienceSection() {
           padding: 12px 20px;
           border-radius: 12px;
           border: 1px solid rgba(255,255,255,0.05);
+          transition: border-color 0.2s;
+          cursor: default;
         }
 
         .exp-date {
@@ -346,6 +476,7 @@ export default function ExperienceSection() {
           background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
           padding: 1px;
           position: relative;
+          cursor: default;
         }
 
         .skill-badge {
@@ -354,6 +485,9 @@ export default function ExperienceSection() {
           border-radius: 8px;
           position: relative;
           overflow: hidden;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .skill-badge__glow {
@@ -362,6 +496,13 @@ export default function ExperienceSection() {
           background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 0%), var(--accent), transparent 60%);
           opacity: 0.12;
           pointer-events: none;
+        }
+
+        .skill-badge__dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          flex-shrink: 0;
         }
 
         .skill-badge__text {
@@ -375,5 +516,3 @@ export default function ExperienceSection() {
     </section>
   )
 }
-
-
