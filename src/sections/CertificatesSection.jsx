@@ -6,6 +6,7 @@ const CERTIFICATES = [
   { id: 'python', title: 'Python Expert', image: import.meta.env.BASE_URL + 'certs/python_cert.png', color: '#fbbf24' },
   { id: 'salesforce', title: 'Salesforce Administrator', image: import.meta.env.BASE_URL + 'certs/salesforce_admin.jpeg', color: '#38bdf8' },
   { id: 'cert3', title: 'Platform Developer I', image: import.meta.env.BASE_URL + 'certs/cert3.png', color: '#c084fc' },
+  { id: 'salesforce-pd2', title: 'Platform Developer II', image: import.meta.env.BASE_URL + 'certs/salesforce_pd2.jpg', color: '#6366f1' },
   { id: 'cert4', title: 'Agentforce Specialist', image: import.meta.env.BASE_URL + 'certs/cert4.png', color: '#34d399' },
   { id: 'data-cloud', title: 'Data Cloud Consultant', image: import.meta.env.BASE_URL + 'certs/data_cloud_cert.png', color: '#10b981' },
 ]
