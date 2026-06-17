@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ command }) => {
   return {
     plugins: [react()],
-    base: command === 'build' ? '/Portfolio/' : '/',
+    base: command === 'build' ? '/' : '/',
     build: {
       // Suppress the chunk size warning (Three.js is inherently large)
       chunkSizeWarningLimit: 600,
