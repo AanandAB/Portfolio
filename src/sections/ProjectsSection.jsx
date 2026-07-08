@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
-import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront, SportsEsports, Launch, Close } from '@mui/icons-material'
+import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront, SportsEsports, Extension, PointOfSale, Waves, Launch, Close } from '@mui/icons-material'
 import { ISLANDS } from '../data/islands'
 import { useRobotPush } from '../hooks/useRobotPush'
 
@@ -14,6 +14,9 @@ const ICON_MAP = {
   aios: Memory,
   bitnexel: Storefront,
   tictac: SportsEsports,
+  sudoku: Extension,
+  cafemaster: PointOfSale,
+  aquarium: Waves,
 }
 
 /* ─── Magnetic Tilt Hook ─── */
