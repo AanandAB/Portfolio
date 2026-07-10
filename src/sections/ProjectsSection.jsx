@@ -59,10 +59,11 @@ function ProjectCard({ project, index, onClick }) {
   const col = index % 3
   const row = Math.floor(index / 3)
   const delay = row * 0.1 + col * 0.05
+  const wide = index === 0 || index === 5 // bento: a couple of cards span 2 cols
 
   return (
     <motion.div
-      className="pw-card-outer"
+      className={`pw-card-outer${wide ? ' pw-card-outer--wide' : ''}`}
       initial={{ opacity: 0, y: 60, scale: 0.92 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-40px' }}
@@ -436,11 +437,18 @@ export default function ProjectsSection() {
           border-radius: 2px;
         }
 
-        /* ── Grid ── */
+        /* ── Grid (bento) ── */
         .pw-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
+          grid-auto-flow: dense;
           gap: 20px;
+        }
+        .pw-card-outer--wide {
+          grid-column: span 2;
+        }
+        @media (max-width: 900px) {
+          .pw-card-outer--wide { grid-column: span 1; }
         }
 
         /* ── Card ── */

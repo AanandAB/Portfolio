@@ -1,6 +1,6 @@
-import React, { useRef, Suspense, useState, useEffect, memo } from 'react'
+import React, { useRef, Suspense, useState, useEffect, useMemo, memo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, Html, Float, Sparkles } from '@react-three/drei'
+import { useGLTF, Html, Float, Sparkles, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import { usePortfolioStore } from '../store/portfolioStore'
 import { Web, GitHub, RocketLaunch, DesignServices, Memory } from '@mui/icons-material'
@@ -373,7 +373,7 @@ function TourScene() {
           ref={islandRef}
           object={scene}
           scale={25}
-          position={[0, -5, 0]}
+          position={[0, 3, 0]}
           dispose={null}
         />
         
@@ -451,23 +451,107 @@ function TourScene() {
   )
 }
 
-/* ─── Shared Camera Rig (Syncs Both Canvases!) ─── */
+/* ─── Drifting Asteroid Field (real low-poly model, CC-BY Poly by Google) ─── */
+const ASTEROID_URL = import.meta.env.BASE_URL + 'scene/asteroid.glb'
+
+function Asteroids({ count = 18 }) {
+  const groupRef = useRef()
+  const { scene } = useGLTF(ASTEROID_URL)
+
+  // Pull the mesh geometry + material out of the GLB and normalise its size to
+  // ~unit radius, so our per-instance scales are predictable regardless of the
+  // model's native units. Geometry/material are shared across all instances.
+  const { geometry, material, norm } = useMemo(() => {
+    let g = null
+    let m = null
+    scene.traverse((o) => {
+      if (o.isMesh && !g) {
+        g = o.geometry
+        m = o.material
+      }
+    })
+    let n = 1
+    if (g) {
+      g.computeBoundingSphere()
+      n = 1 / (g.boundingSphere?.radius || 1)
+    }
+    return { geometry: g, material: m, norm: n }
+  }, [scene])
+
+  const rocks = useMemo(() => {
+    const out = []
+    for (let i = 0; i < count; i++) {
+      const r = 26 + Math.random() * 44
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      out.push({
+        position: [
+          r * Math.sin(phi) * Math.cos(theta),
+          Math.random() * 50 - 20,
+          r * Math.sin(phi) * Math.sin(theta),
+        ],
+        rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI],
+        size: (0.7 + Math.random() * 3.0) * norm,
+        spin: (Math.random() - 0.5) * 0.5,
+      })
+    }
+    return out
+  }, [count, norm])
+
+  useFrame((state, delta) => {
+    const grp = groupRef.current
+    if (!grp) return
+    for (let i = 0; i < grp.children.length; i++) {
+      const s = rocks[i].spin
+      grp.children[i].rotation.x += delta * s * 0.6
+      grp.children[i].rotation.y += delta * s
+    }
+    grp.rotation.y += delta * 0.01 // whole field drifts very slowly
+  })
+
+  if (!geometry) return null
+
+  return (
+    <group ref={groupRef}>
+      {rocks.map((r, i) => (
+        <mesh
+          key={i}
+          geometry={geometry}
+          material={material}
+          position={r.position}
+          rotation={r.rotation}
+          scale={r.size}
+        />
+      ))}
+    </group>
+  )
+}
+useGLTF.preload(ASTEROID_URL)
+
+/* ─── Orbital Camera Rig (scroll-scrubbed loop around the island) ─── */
+// Scroll maps to a full 360° orbit around the floating island at a steady
+// distance, with a gentle height wave so you see it from all angles — top,
+// sides, and a slight dip. No dive-in/dive-out: just a smooth circle.
 function CameraRig() {
   const scrollProgress = usePortfolioStore((s) => s.scrollProgress)
 
   useFrame((state) => {
-    // Camera animation path tuned for Scale 25 island
-    const theta = -scrollProgress * Math.PI * 2.5 // greater than 360 degree orbit
-    const radius = 35 - Math.sin(scrollProgress * Math.PI) * 10 
-    const camY = 15 + Math.sin(scrollProgress * Math.PI * 2) * 8
+    const t = THREE.MathUtils.clamp(scrollProgress, 0, 1)
 
-    // Target Camera Position
-    const targetX = Math.sin(theta) * radius
-    const targetZ = Math.cos(theta) * radius
+    // Full 360° orbit (plus a little extra so you don't start/end at exactly
+    // the same frame → smoother loop illusion).
+    const theta = t * Math.PI * 2.2
+    const radius = 18 // tighter orbit — island fills more of the frame
+    const camY = 14 + Math.sin(t * Math.PI * 2) * 4 // gentle up/down wave
 
-    // Set camera position directly
-    state.camera.position.set(targetX, camY, targetZ)
-    state.camera.lookAt(0, 5, 0)
+    state.camera.position.set(
+      Math.sin(theta) * radius,
+      camY,
+      Math.cos(theta) * radius,
+    )
+
+    state.camera.up.set(0, 1, 0)
+    state.camera.lookAt(0, 12, 0)
   })
 
   return null
@@ -493,7 +577,11 @@ export default function BackgroundScene() {
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 8, 5]} intensity={1.2} />
             <pointLight position={[-3, 4, -2]} color="#0ea5e9" intensity={0.5} distance={20} />
-            
+
+            {/* Deep space environment */}
+            <Stars radius={140} depth={70} count={6500} factor={4.5} saturation={0} fade speed={0.5} />
+            <Asteroids count={16} />
+
             <CameraRig />
             <TourScene />
           </Canvas>

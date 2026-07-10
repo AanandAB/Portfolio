@@ -1,109 +1,123 @@
 import React, { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import './HeroScene.css'
-import DecryptedText from '../components/DecryptedText'
-import StarBorder from '../components/StarBorder'
 import { useRobotPush } from '../hooks/useRobotPush'
+import StarBorder from '../components/StarBorder'
 
-function PushableChip({ children, duration, color, className }) {
-  const { wrapperRef, innerRef } = useRobotPush({ pushRadius: 200, maxForce: 20, scaleCompression: 0.02 })
+const heroLinks = [
+  { label: 'React', color: '#38bdf8', href: null },
+  { label: 'Three.js', color: '#c084fc', href: null },
+  { label: 'Salesforce', color: '#f472b6', href: null },
+  { label: 'Flutter', color: '#818cf8', href: null },
+  { label: 'AI / Agents', color: '#34d399', href: null },
+  { label: 'Web3', color: '#fbbf24', href: null },
+]
+
+function HeroLink({ label, color, href, i }) {
+  const { wrapperRef, innerRef } = useRobotPush({
+    pushRadius: 180, maxForce: 18, scaleCompression: 0.02,
+  })
+  const El = href ? 'a' : 'span'
   return (
-    <div ref={wrapperRef} style={{ display: 'inline-block' }}>
-      <div ref={innerRef} style={{ display: 'inline-block', height: '100%' }}>
-        <StarBorder color={color} className="hero-scene__chip-wrapper" duration={duration}>
-          <span className={`hero-scene__chip ${className}`}>{children}</span>
-        </StarBorder>
-      </div>
-    </div>
+    <motion.div
+      ref={wrapperRef}
+      initial={{ opacity: 0, y: 30, scale: 0.85 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 14, delay: 0.45 + i * 0.07 }}
+    >
+      <StarBorder color={color} duration={5 + i * 0.6} className="hs-chip-outer">
+        <El
+          ref={innerRef}
+          href={href ?? undefined}
+          target={href ? '_blank' : undefined}
+          rel={href ? 'noopener noreferrer' : undefined}
+          className="hs-chip"
+          style={{ color }}
+        >
+          {label}
+        </El>
+      </StarBorder>
+    </motion.div>
   )
 }
 
 export default function HeroScene() {
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start']
+    target: heroRef, offset: ['start start', 'end start'],
   })
-
-  // Parallax layers: title moves up faster, subtitle slower, chips slowest
-  const titleY = useTransform(scrollYProgress, [0, 1], [0, -120])
-  const subtitleY = useTransform(scrollYProgress, [0, 1], [0, -60])
-  const chipsY = useTransform(scrollYProgress, [0, 1], [0, -30])
-  const overlayOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const starsScale = useTransform(scrollYProgress, [0, 1], [1, 1.3])
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+  const chipsY = useTransform(scrollYProgress, [0, 1], [0, -35])
 
   return (
-    <section className="hero-scene" id="hero" ref={heroRef}>
-      <motion.div className="hero-scene__overlay" style={{ opacity: overlayOpacity }}>
+    <section className="hs" id="hero" ref={heroRef}>
+      <motion.div className="hs-overlay" style={{ opacity: overlayOpacity }}>
+        {/* Stars */}
+        <div className="hs-stars" />
 
-        {/* Starfield background with parallax zoom */}
-        <motion.div className="hero-scene__stars" style={{ scale: starsScale }} />
+        {/* Content */}
+        <div className="hs-content">
 
-        {/* Neon beam animations */}
-        <div className="hero-scene__beam hero-scene__beam--1" />
-        <div className="hero-scene__beam hero-scene__beam--2" />
-
-        {/* Content with staggered parallax depths */}
-        <div className="hero-scene__content" style={{ position: 'relative', zIndex: 10 }}>
-          {/* Eyebrow */}
-          <motion.div className="hero-scene__eyebrow" style={{ y: titleY }}>
-            <DecryptedText 
-              text="✦ PORTFOLIO  · 3D EXPERIENCE" 
-              speed={40} 
-              maxIterations={12} 
-              sequential 
-            />
+          {/* Glowing badge */}
+          <motion.div
+            className="hs-badge"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 120, damping: 14 }}
+          >
+            <span className="hs-badge-dot" />
+            <span>✦ PORTFOLIO · 3D EXPERIENCE</span>
           </motion.div>
 
-          {/* Main heading */}
-          <motion.h1 className="hero-scene__title" style={{ y: titleY }}>
-            <span className="hero-scene__title-line1">
-              <DecryptedText
-                text="AANAND AB"
-                speed={40}
-                maxIterations={15}
-                sequential
-              />
-            </span>
-            <br />
-            <span className="hero-scene__title-line2">
-              <DecryptedText
-                text="Software Engineer"
-                speed={40}
-                maxIterations={15}
-                sequential
-              />
-            </span>
-          </motion.h1>
+          {/* Title — staggered lines */}
+          <h1 className="hs-title">
+            <motion.span
+              className="hs-title-line hs-title-l1"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 80, damping: 16, delay: 0.15 }}
+            >
+              AANAND AB
+            </motion.span>
+            <motion.span
+              className="hs-title-line hs-title-l2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 80, damping: 16, delay: 0.28 }}
+            >
+              Software Engineer
+            </motion.span>
+          </h1>
 
           {/* Subtitle */}
-          <motion.p className="hero-scene__subtitle" style={{ y: subtitleY }}>
-            <DecryptedText 
-              text="Scroll to explore my projects scattered across the island." 
-              speed={50} 
-              maxIterations={10} 
-              sequential 
-            />
+          <motion.p
+            className="hs-sub"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 60, damping: 16, delay: 0.4 }}
+          >
+            Scroll to explore my projects scattered across the floating island.
           </motion.p>
 
-          {/* Tech chips */}
-          <motion.div className="hero-scene__chips" style={{ y: chipsY }}>
-            <PushableChip color="#38bdf8" duration={4} className="hero-scene__chip--cyan">React</PushableChip>
-            <PushableChip color="#c084fc" duration={5} className="hero-scene__chip--purple">Three.js</PushableChip>
-            <PushableChip color="#f472b6" duration={4.5} className="hero-scene__chip--pink">Salesforce</PushableChip>
-            <PushableChip color="#94a3b8" duration={4} className="">Python · AI</PushableChip>
-            <PushableChip color="#38bdf8" duration={5.5} className="hero-scene__chip--cyan">Web3</PushableChip>
+          {/* Tech chips — bento-style */}
+          <motion.div className="hs-links" style={{ y: chipsY }}>
+            {heroLinks.map((l, i) => (
+              <HeroLink key={l.label} label={l.label} color={l.color} href={l.href} i={i} />
+            ))}
           </motion.div>
 
           {/* Scroll indicator */}
-          <motion.div 
-            className="hero-scene__scroll-cta"
-            style={{ y: chipsY }}
-            animate={{ y: [0, -8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          <motion.div
+            className="hs-scroll"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, y: [0, -6, 0] }}
+            transition={{
+              opacity: { delay: 1.2, duration: 0.6 },
+              y: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
+            }}
           >
-            <div className="hero-scene__scroll-line" />
-            <span className="hero-scene__scroll-text">SCROLL</span>
+            <div className="hs-scroll-line" />
+            <span className="hs-scroll-label">SCROLL</span>
           </motion.div>
         </div>
       </motion.div>
