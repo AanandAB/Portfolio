@@ -1,616 +1,188 @@
-import React, { useRef, Suspense, useState, useEffect, useMemo, memo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, Html, Float, Sparkles, Stars } from '@react-three/drei'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { usePortfolioStore } from '../store/portfolioStore'
-import { Web, GitHub, RocketLaunch, DesignServices, Memory } from '@mui/icons-material'
 
-/* ─── Cute Robot Visitor Logic ─── */
-function RobotVisitor({ robotContainerRef }) {
-  const { scene } = useGLTF(import.meta.env.BASE_URL + 'scene/cute_robot.bin')
-  const robotRef = useRef()
-  const [taunt, setTaunt] = useState('')
+const P = '#F9FBFB'  // primary white
+const VD = '#0D3A62' // visor dark
+const VB = '#00B8E8' // visor bright
 
-  // State to hold random targets and behavior mode
-  // The robot occasionally stops (sits) on a location, then resumes flying.
-  const stateRef = useRef({
-    mode: 'flying', // 'flying' or 'sitting' or 'fleeing'
-    targetPos: new THREE.Vector3(),
-    timer: 0,
-    flySpeed: 0.04
-  })
-  
-  // React state for particle trail rendering
-  const [isMoving, setIsMoving] = useState(true)
+function createEva() {
+  const group = new THREE.Group()
+  const mat = new THREE.MeshStandardMaterial({ color: P, roughness: 0.06, metalness: 0.03 })
 
-  // AI APIs: Fetch Visitor Context!
-  const [visitorData, setVisitorData] = useState(null)
+  // ── Egg-shaped torso ──
+  const bodyGeo = new THREE.SphereGeometry(0.45, 48, 48)
+  bodyGeo.scale(1, 1.5, 0.85)
+  group.add(new THREE.Mesh(bodyGeo, mat))
+
+  // ── Head ──
+  const headGeo = new THREE.SphereGeometry(0.26, 40, 40)
+  headGeo.scale(1.05, 0.65, 0.9)
+  const head = new THREE.Mesh(headGeo, new THREE.MeshStandardMaterial({ color: P, roughness: 0.05, metalness: 0.03 }))
+  head.position.y = 0.48
+  group.add(head)
+
+  // ── Visor ──
+  const visorGeo = new THREE.SphereGeometry(0.22, 36, 20, 0, Math.PI*2, 0.15, Math.PI*0.45)
+  visorGeo.scale(1.05, 0.55, 0.82)
+  const visor = new THREE.Mesh(visorGeo, new THREE.MeshStandardMaterial({ color: VD, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.75 }))
+  visor.rotation.x = -0.1
+  visor.position.set(0, 0.46, 0.16)
+  group.add(visor)
+
+  // ── Eyes with glow ──
+  const eyeGeo = new THREE.SphereGeometry(0.05, 24, 24)
+  eyeGeo.scale(1.4, 0.9, 0.3)
+  const eyeMat = new THREE.MeshBasicMaterial({ color: VD })
+  const lEye = new THREE.Mesh(eyeGeo, eyeMat); lEye.position.set(-0.08, 0.52, 0.2)
+  const rEye = new THREE.Mesh(eyeGeo, eyeMat); rEye.position.set(0.08, 0.52, 0.2)
+  const glowGeo = new THREE.RingGeometry(0.045, 0.058, 24)
+  const glowMat = new THREE.MeshBasicMaterial({ color: VB, side: THREE.DoubleSide, transparent: true, opacity: 0.4 })
+  const lGlow = new THREE.Mesh(glowGeo, glowMat); lGlow.position.set(-0.08, 0.52, 0.205)
+  const rGlow = new THREE.Mesh(glowGeo, glowMat); rGlow.position.set(0.08, 0.52, 0.205)
+  group.add(lEye, rEye, lGlow, rGlow)
+
+  // ── Arms ──
+  const armGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.9, 12)
+  const armMat = new THREE.MeshStandardMaterial({ color: P, roughness: 0.07, metalness: 0.04 })
+  const lArm = new THREE.Mesh(armGeo, armMat)
+  lArm.position.set(-0.42, 0.0, 0); lArm.rotation.z = 0.2
+  const rArm = new THREE.Mesh(armGeo, armMat)
+  rArm.position.set(0.42, 0.0, 0); rArm.rotation.z = -0.2
+  group.add(lArm, rArm)
+
+  return { group, lGlow, rGlow }
+}
+
+/* ═══════════════════════════════════════════════
+   CSS STARS
+   ═══════════════════════════════════════════════ */
+function Starfield() {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {Array.from({ length: 200 }, (_, i) => (
+        <div key={i} style={{
+          position: 'absolute', left: `${Math.random()*100}%`, top: `${Math.random()*100}%`,
+          width: `${Math.random()*3+1}px`, height: `${Math.random()*3+1}px`, borderRadius: '50%',
+          background: i%3===0?'#ffffff':i%3===1?'#ccddff':'#aaccff',
+          boxShadow: i%4===0?`0 0 ${Math.random()*4+2}px rgba(180,210,255,0.5)`:'none',
+          opacity: Math.random()*0.7+0.3,
+          animation: `tw${i%5} ${Math.random()*3+2}s ease-in-out ${Math.random()*3}s infinite`,
+        }} />
+      ))}
+      <style>{`
+        @keyframes tw0{0%,100%{opacity:0.3}50%{opacity:0.9}}
+        @keyframes tw1{0%,100%{opacity:0.5}30%{opacity:0.2}60%{opacity:0.8}}
+        @keyframes tw2{0%,100%{opacity:0.4}40%{opacity:0.9}70%{opacity:0.2}}
+        @keyframes tw3{0%,100%{opacity:0.6}25%{opacity:0.2}55%{opacity:0.9}80%{opacity:0.3}}
+        @keyframes tw4{0%,100%{opacity:0.35}50%{opacity:0.85}75%{opacity:0.15}}
+      `}</style>
+    </div>
+  )
+}
+
+export default function BackgroundScene() {
+  const mountRef = useRef(null)
+  const tauntRef = useRef(null)
 
   useEffect(() => {
-    const fetchContext = async () => {
-      try {
-        // 1. Get Location (Free, No Key, HTTPS)
-        const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json')
-        const geoData = await geoRes.json()
-        
-        let weatherData = null
-        if (geoData.latitude && geoData.longitude) {
-          // 2. Get Weather for that location (Free, No Key, HTTPS)
-          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geoData.latitude}&longitude=${geoData.longitude}&current_weather=true`)
-          const weatherJson = await weatherRes.json()
-          weatherData = weatherJson.current_weather
-        }
+    const container = mountRef.current
+    if (!container) return
 
-        const context = {
-          city: geoData.city || 'Earth',
-          country: geoData.country || 'Space',
-          temp: weatherData ? weatherData.temperature : null
-        }
-        
-        setVisitorData(context)
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 1, 50)
+    camera.position.set(0, 1, 7)
 
-        // Give a smart initial greeting!
-        setTaunt(`Scanning... incoming connection from ${context.city}, ${context.country}! 🌍`)
-        setTimeout(() => setTaunt(''), 5000)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+    renderer.setSize(innerWidth, innerHeight)
+    container.appendChild(renderer.domElement)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8))
+    scene.add(new THREE.PointLight(0xffffff, 1.2, 12)).position.set(3, 4, 3)
 
-      } catch (err) {
-        console.log("Could not fetch remote visitor context", err)
-      }
+    // White egg at SAME spot as red sphere
+    const bodyGeo = new THREE.SphereGeometry(0.5, 32, 32)
+    const body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: '#F9FBFB', roughness: 0.06, metalness: 0.03 }))
+    body.position.set(2, 1, 2)
+    scene.add(body)
+
+    const s = {
+      pos: new THREE.Vector3(0, 1.2, 2),
+      target: new THREE.Vector3(0, 1.2, 2),
+      timer: 0, busy: false,
     }
-    
-    // Slight delay so the scene loads first
-    setTimeout(fetchContext, 4000)
+
+    window.addEventListener('resize', () => { camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight) })
+
+    const swapDom = (a, b) => {
+      const pA = a.parentNode
+      if (a.nextSibling === b) pA.insertBefore(b, a)
+      else { const ph = document.createTextNode(''); pA.insertBefore(ph, a); pA.insertBefore(a, b); pA.insertBefore(b, ph); pA.removeChild(ph) }
+    }
+
+    const rearrange = () => {
+      if (s.busy) return
+      const els = Array.from(document.querySelectorAll('.pw-card-outer, .cg-card, .exp-stat'))
+        .filter(el => { const r = el.getBoundingClientRect(); return r.width > 50 && r.height > 20 && r.top < innerHeight && r.bottom > 0 })
+      if (els.length < 2) return
+      const i = Math.floor(Math.random()*els.length)
+      let j; do { j = Math.floor(Math.random()*els.length) } while (j===i)
+      const a = els[i], b = els[j]
+      s.busy = true
+      // Fly to A
+      const rA = a.getBoundingClientRect()
+      s.target.set(((rA.left+rA.width/2)/innerWidth-0.5)*7, -((rA.top+rA.height/2)/innerHeight-0.5)*4+1.2, 1.5)
+      if(tauntRef.current){tauntRef.current.textContent='Found one! 🔍';tauntRef.current.style.opacity='1'}
+      setTimeout(() => {
+        a.style.setProperty('transition','all 0.4s cubic-bezier(0.34,1.56,0.64,1)','important')
+        a.style.setProperty('transform','scale(0.75) rotate(-2deg)','important')
+        a.style.setProperty('filter','brightness(1.5) drop-shadow(0 0 30px rgba(0,184,232,0.9))','important')
+        const rB = b.getBoundingClientRect()
+        s.target.set(((rB.left+rB.width/2)/innerWidth-0.5)*7, -((rB.top+rB.height/2)/innerHeight-0.5)*4+1.2, 1.5)
+        setTimeout(() => {
+          b.style.setProperty('transition','all 0.4s cubic-bezier(0.34,1.56,0.64,1)','important')
+          b.style.setProperty('transform','scale(0.75) rotate(2deg)','important')
+          b.style.setProperty('filter','brightness(1.5) drop-shadow(0 0 30px rgba(0,184,232,0.9))','important')
+          setTimeout(() => {
+            swapDom(a,b)
+            ;[a,b].forEach(el => { el.style.setProperty('transition','all 0.6s cubic-bezier(0.16,1,0.3,1)','important'); el.style.setProperty('transform','scale(1) rotate(0deg)','important'); el.style.setProperty('filter','','important') })
+            if(tauntRef.current){tauntRef.current.textContent='Perfect! ✨';tauntRef.current.style.opacity='1'}
+            s.target.set((Math.random()-0.5)*3, 1.2, 2.5)
+            setTimeout(() => { s.busy=false; if(tauntRef.current)tauntRef.current.style.opacity='0' }, 2500)
+          }, 400)
+        }, 600)
+      }, 500)
+    }
+
+    let animId
+    const animate = () => {
+      const t = Date.now() * 0.001
+      s.timer -= 0.016
+      if (s.timer <= 0 && !s.busy) {
+        s.target.set((Math.random()-0.5)*6, (Math.random()-0.5)*3+1.2, Math.random()*1.5+1.8)
+        s.timer = 5 + Math.random()*6
+      }
+      const mid = new THREE.Vector3().addVectors(s.pos, s.target).multiplyScalar(0.5)
+      mid.y += Math.sin(t*0.2)*1.2; mid.x += Math.sin(t*0.25)*1
+      const p = Math.min(1, 1 - s.timer/(s.timer+0.016))
+      const om = 1-p
+      s.pos.set(om*om*s.pos.x+2*om*p*mid.x*0.5+p*p*s.target.x*0.5+s.pos.x*0.5, om*om*s.pos.y+2*om*p*mid.y*0.5+p*p*s.target.y*0.5+s.pos.y*0.5, om*om*s.pos.z+2*om*p*mid.z*0.5+p*p*s.target.z*0.5+s.pos.z*0.5)
+      body.position.set(s.pos.x, s.pos.y+Math.sin(t*1.2)*0.06, s.pos.z)
+      body.rotation.z += (s.pos.x*0.02-body.rotation.z)*0.03
+
+      renderer.render(scene, camera)
+      animId = requestAnimationFrame(animate)
+    }
+    animate()
+    const interval = setInterval(rearrange, 14000)
+    setTimeout(rearrange, 6000)
+    return () => { cancelAnimationFrame(animId); clearInterval(interval); renderer.dispose(); container.removeChild(renderer.domElement) }
   }, [])
 
-  const handleInteract = (e) => {
-    e.stopPropagation()
-    const data = stateRef.current
-    // If it's already fleeing, ignore
-    if (data.mode === 'fleeing') return
-
-    // Trigger a playful bounce instead of a terrifying sprint
-    data.mode = 'fleeing'
-    data.timer = 3.5 // flee state lasts a bit longer but is slower
-    data.flySpeed = 0.015 + Math.random() * 0.01 // Soft slow bounce away!
-    
-    // Pick a gentle evasive target not too far away
-    data.targetPos.set(
-      (Math.random() * 15) - 7.5,
-      10 + Math.random() * 10,
-      (Math.random() * 15) - 7.5
-    )
-
-    // Taunt the user with standard or dynamic AIOS-style responses
-    const taunts = [
-      "Hehe, missed me! 😜", 
-      "I'm too floaty! ☁️", 
-      "*playful beep* 🎈", 
-      "Just inspecting the DOM! 🔍", 
-      "Can't catch a cloud! 🤖"
-    ]
-
-    // If we have AI context, add super smart taunts to the array!
-    if (visitorData) {
-      if (visitorData.city !== 'Earth') {
-        taunts.push(`How are things in ${visitorData.city} today? 🏙️`)
-        taunts.push(`Greetings to everyone in ${visitorData.country}! 🛸`)
-      }
-      if (visitorData.temp !== null) {
-        taunts.push(`My sensors indicate it's ${visitorData.temp}°C outside! 🌡️`)
-        if (visitorData.temp > 25) taunts.push("It's quite warm where you are! Stay hydrated! 💧")
-        if (visitorData.temp < 10) taunts.push("It's chilly there! My processors are keeping me warm! ❄️")
-      }
-    }
-
-    setTaunt(taunts[Math.floor(Math.random() * taunts.length)])
-    
-    // Clear taunt text after 3 seconds
-    setTimeout(() => {
-      setTaunt('')
-    }, 3000)
-  }
-
-  useFrame((state, delta) => {
-    if (!robotRef.current) return
-
-    const t = state.clock.elapsedTime
-    const data = stateRef.current
-    
-    // Decrement behavior timer
-    data.timer -= delta
-
-    if (data.mode === 'flying' || data.mode === 'fleeing') {
-      // Pick a new destination randomly if timer runs out
-      if (data.timer <= 0) {
-        if (data.mode === 'fleeing') {
-          // Finished fleeing, return to slow flying
-          data.mode = 'flying'
-        }
-        
-        // 35% chance to do a close sweep to gently drift in front of the camera view
-        const isForeground = Math.random() > 0.65
-        const radius = isForeground ? (15 + Math.random() * 10) : (5 + Math.random() * 8)
-        const angle = Math.random() * Math.PI * 2
-        // Expand the height to comfortably visit the top and bottom corners of the screen!
-        const height = Math.random() * 25 - 6 
-        
-        let targetZ = Math.sin(angle) * radius
-        // Clamp Z so it never flies completely behind the user's camera to prevent disappearing!
-        if (targetZ > 8) targetZ = 8 
-        
-        data.targetPos.set(
-          Math.cos(angle) * radius,
-          height,
-          targetZ
-        )
-        // Fly smoothly but a bit faster than before!
-        data.timer = 5 + Math.random() * 5
-        data.flySpeed = 0.008 + Math.random() * 0.006 
-        
-        // 10% chance it decides to dive-bomb and sit on the island! (only when flying naturally)
-        if (data.mode === 'flying' && Math.random() > 0.9) {
-          data.mode = 'sitting'
-          data.timer = 8 + Math.random() * 10 // sit for a long time
-          // Land peacefully in the main view area
-          data.targetPos.set(
-            (Math.random() * 6) - 3, 
-            2 + Math.random() * 4, 
-            (Math.random() * 6) - 3
-          ) 
-        }
-      }
-
-      // Sync the moving state for the particle trails!
-      if (!isMoving) setIsMoving(true)
-
-      // Create "Water-Like Currents" for extremely organic, non-linear floating
-      const tDrift = t * 0.5
-      const flowX = Math.sin(tDrift * 1.3) * 3 + Math.sin(tDrift * 0.8) * 2
-      const flowY = Math.sin(tDrift * 1.7) * 1.5
-      const flowZ = Math.cos(tDrift * 1.1) * 3 + Math.sin(tDrift * 0.9) * 2
-      
-      const currentPos = robotRef.current.position.clone()
-      
-      // Calculate dynamic flowing target
-      const moveTarget = data.targetPos.clone()
-      moveTarget.x += flowX
-      moveTarget.y += flowY
-      moveTarget.z += flowZ
-      
-      // Extremely smooth lerp creates water-like viscosity/drag
-      robotRef.current.position.lerp(moveTarget, data.flySpeed)
-      
-      // Calculate continuous "velocity" vector to determine how to bank and lean!
-      const velocityX = (moveTarget.x - currentPos.x) * data.flySpeed
-      const velocityZ = (moveTarget.z - currentPos.z) * data.flySpeed
-
-      // Look far ahead smoothly (to its true ultimate target, not the local flow)
-      const lookTarget = currentPos.clone().lerp(data.targetPos, 0.01)
-      lookTarget.y = currentPos.y // Lock the neck so he doesn't look up/down awkwardly
-      robotRef.current.lookAt(lookTarget)
-      
-      // Beautiful Organic Banking: Leans into turns based on actual physical momentum!
-      const targetBankZ = -velocityX * 4
-      const targetPitchX = velocityZ * 4
-      
-      robotRef.current.rotation.z = THREE.MathUtils.lerp(robotRef.current.rotation.z, targetBankZ, 0.04)
-      robotRef.current.rotation.x = THREE.MathUtils.lerp(robotRef.current.rotation.x, targetPitchX, 0.04)
-
-    } else if (data.mode === 'sitting') {
-      // Lerp very, very gently to sitting pos so it floats down softly
-      robotRef.current.position.lerp(data.targetPos, 0.02)
-      
-      // Sit back and enjoy the view! Rotate gently.
-      robotRef.current.rotation.x = THREE.MathUtils.lerp(robotRef.current.rotation.x, 0, 0.02)
-      robotRef.current.rotation.z = THREE.MathUtils.lerp(robotRef.current.rotation.z, 0, 0.02)
-      robotRef.current.rotation.y += delta * 0.1 // Spins extremely slowly around looking at things
-      
-      // Stop the particles since we are parked
-      if (isMoving) setIsMoving(false)
-
-      if (data.timer <= 0) {
-        data.mode = 'flying'
-      }
-    }
-
-    // -- 3D to 2D PROJECTION FOR DOM INTERACTION --
-    // We project the drone's center immediately to 2D pixel coordinates and share it with pure CSS!
-    const vector = robotRef.current.position.clone()
-    vector.project(state.camera)
-    
-    // Convert normalized device coordinates (-1 to +1) to pixel screen coordinates
-    const rx = (vector.x * 0.5 + 0.5) * window.innerWidth
-    const ry = (-(vector.y * 0.5) + 0.5) * window.innerHeight
-    
-    // Store in global CSS so DOM elements can compute repel/pushing forces
-    document.body.style.setProperty('--robot-x', `${rx}px`)
-    document.body.style.setProperty('--robot-y', `${ry}px`)
-    // -- DYNAMIC Z-INDEXING (THE MAGIC LAYER INTERLEAVING!) --
-    // Compute exact physical distance from camera lens to the robot
-    const dist = robotRef.current.position.distanceTo(state.camera.position)
-    
-    // If the robot swoops closer than 22 units, it pops out IN FRONT of the Glassmorphic HTML cards!
-    // If it flies further away, it slips BEHIND the HTML cards, but stays in front of the Island!
-    if (robotContainerRef && robotContainerRef.current) {
-      if (dist < 26) {
-        robotContainerRef.current.style.zIndex = '9999' // Topmost layer
-      } else {
-        robotContainerRef.current.style.zIndex = '50'   // Middle layer (Behind HTML which is 100)
-      }
-    }
-    
-  })
-
-  return (
-    <group 
-      ref={robotRef}
-      onPointerOver={handleInteract}
-      onClick={handleInteract}
-    >
-      {/* Dynamic Particle System Tail */}
-      {isMoving && (
-        <Sparkles
-          count={35}
-          scale={2}
-          size={4}
-          speed={0.5}
-          opacity={0.7}
-          color={'#38bdf8'}
-          noise={12}
-        />
-      )}
-      <primitive 
-        object={scene} 
-        scale={1.5} 
-        dispose={null}
-      />
-      
-      {taunt && (
-        <Html position={[0, 3, 0]} center style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-          <div style={{
-            background: 'rgba(56, 189, 248, 0.9)',
-            color: '#000',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '14px',
-            fontWeight: 'bold',
-            boxShadow: '0 0 20px rgba(56,189,248,0.8)',
-            transform: 'translateY(-10px)',
-            animation: 'heroFadeIn 0.2s ease-out'
-          }}>
-            {taunt}
-          </div>
-        </Html>
-      )}
-    </group>
-  )
-}
-
-
-/* ─── Projects Configuration mapped to 3D Space ─── */
-// Tuned coordinates for a Scale=25 Island
-const PROJECTS_3D = [
-  {
-    id: 'cafe',
-    name: 'CafePOSPro',
-    desc: 'Full-stack POS with QR menu & live tracking',
-    icon: <Web fontSize="small" />,
-    color: '#38bdf8',
-    pos: [-12, 6, 8], 
-    scrollEnter: 0.15,
-    link: 'https://github.com/AanandAB/CafePOSPRO'
-  },
-  {
-    id: 'theyyam',
-    name: 'Theyyam & Tourism App',
-    desc: 'Live cultural tourism app with OSM & Weather',
-    icon: <RocketLaunch fontSize="small" />,
-    color: '#fbbf24',
-    pos: [10, 8, 12],
-    scrollEnter: 0.35,
-  },
-  {
-    id: 'knightly',
-    name: 'Knightly Chess',
-    desc: 'Decentralised blockchain chess',
-    icon: <GitHub fontSize="small" />,
-    color: '#c084fc',
-    pos: [15, 4, -6],
-    scrollEnter: 0.55,
-    link: 'https://github.com/AanandAB/KNIGHTLY'
-  },
-  {
-    id: 'evently',
-    name: 'Evently Connect',
-    desc: 'Sleek event management landing page',
-    icon: <DesignServices fontSize="small" />,
-    color: '#f472b6',
-    pos: [-6, 10, -12],
-    scrollEnter: 0.75,
-    link: 'https://github.com/AanandAB/evently-connect-portal'
-  },
-  {
-    id: 'bytebot',
-    name: 'Bytebot AI Lab',
-    desc: 'Self-adaptive multi-agent AI framework',
-    icon: <RocketLaunch fontSize="small" />,
-    color: '#34d399',
-    pos: [0, 14, -15],
-    scrollEnter: 0.88,
-  },
-  {
-    id: 'aios',
-    name: 'AIOS v2.0',
-    desc: 'Local AI Operating System & Agents',
-    icon: <Memory fontSize="small" />,
-    color: '#ef4444',
-    pos: [8, 16, -5],
-    scrollEnter: 1.0, 
-  }
-]
-
-/* ─── 3D Island & Camera Tour Logic ─── */
-function TourScene() {
-  const { scene } = useGLTF(import.meta.env.BASE_URL + 'scene/island.bin')
-  const islandRef = useRef()
-  const scrollProgress = usePortfolioStore((s) => s.scrollProgress)
-  const vFocus = new THREE.Vector3()
-
-  useFrame((state, delta) => {
-    const t = state.clock.elapsedTime
-    
-    // Slow underlying auto-rotation of the island
-    if (islandRef.current) {
-      islandRef.current.rotation.y += delta * 0.05
-    }
-  })
-
   return (
     <>
-      <Float floatIntensity={0.1} speed={0.5}>
-        <primitive
-          ref={islandRef}
-          object={scene}
-          scale={25}
-          position={[0, 3, 0]}
-          dispose={null}
-        />
-        
-        {/* Render 3D HTML overlays attached directly to global coordinates */}
-        {PROJECTS_3D.map((proj) => {
-          // Calculate opacity based on proximity to the scroll waypoint
-          const opacity = Math.max(0, 1 - Math.abs(scrollProgress - proj.scrollEnter) * 5)
-          const isVisible = opacity > 0.01
-
-          if (!isVisible) return null
-
-          return (
-            <Html
-              key={proj.id}
-              position={proj.pos}
-              center
-              zIndexRange={[100, 0]}
-              distanceFactor={15}
-              style={{
-                opacity,
-                pointerEvents: isVisible ? 'auto' : 'none',
-                transition: 'opacity 0.1s'
-              }}
-            >
-              <div
-                style={{
-                  background: 'rgba(5, 10, 20, 0.85)',
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${proj.color}50`,
-                  borderRadius: '16px',
-                  padding: '16px 20px',
-                  width: '240px',
-                  color: '#fff',
-                  boxShadow: `0 0 30px ${proj.color}30`,
-                  textAlign: 'center',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                <div style={{ color: proj.color, marginBottom: '8px' }}>{proj.icon}</div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {proj.name}
-                </h3>
-                <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#cbd5e1' }}>
-                  {proj.desc}
-                </p>
-                {proj.link && (
-                  <a
-                    href={proj.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-block',
-                      background: `${proj.color}20`,
-                      color: proj.color,
-                      textDecoration: 'none',
-                      padding: '6px 16px',
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      border: `1px solid ${proj.color}50`,
-                      transition: 'transform 0.2s',
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                  >
-                    VIEW REPO
-                  </a>
-                )}
-              </div>
-            </Html>
-          )
-        })}
-      </Float>
-    </>
-  )
-}
-
-/* ─── Drifting Asteroid Field (real low-poly model, CC-BY Poly by Google) ─── */
-const ASTEROID_URL = import.meta.env.BASE_URL + 'scene/asteroid.glb'
-
-function Asteroids({ count = 18 }) {
-  const groupRef = useRef()
-  const { scene } = useGLTF(ASTEROID_URL)
-
-  // Pull the mesh geometry + material out of the GLB and normalise its size to
-  // ~unit radius, so our per-instance scales are predictable regardless of the
-  // model's native units. Geometry/material are shared across all instances.
-  const { geometry, material, norm } = useMemo(() => {
-    let g = null
-    let m = null
-    scene.traverse((o) => {
-      if (o.isMesh && !g) {
-        g = o.geometry
-        m = o.material
-      }
-    })
-    let n = 1
-    if (g) {
-      g.computeBoundingSphere()
-      n = 1 / (g.boundingSphere?.radius || 1)
-    }
-    return { geometry: g, material: m, norm: n }
-  }, [scene])
-
-  const rocks = useMemo(() => {
-    const out = []
-    for (let i = 0; i < count; i++) {
-      const r = 26 + Math.random() * 44
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.acos(2 * Math.random() - 1)
-      out.push({
-        position: [
-          r * Math.sin(phi) * Math.cos(theta),
-          Math.random() * 50 - 20,
-          r * Math.sin(phi) * Math.sin(theta),
-        ],
-        rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI],
-        size: (0.7 + Math.random() * 3.0) * norm,
-        spin: (Math.random() - 0.5) * 0.5,
-      })
-    }
-    return out
-  }, [count, norm])
-
-  useFrame((state, delta) => {
-    const grp = groupRef.current
-    if (!grp) return
-    for (let i = 0; i < grp.children.length; i++) {
-      const s = rocks[i].spin
-      grp.children[i].rotation.x += delta * s * 0.6
-      grp.children[i].rotation.y += delta * s
-    }
-    grp.rotation.y += delta * 0.01 // whole field drifts very slowly
-  })
-
-  if (!geometry) return null
-
-  return (
-    <group ref={groupRef}>
-      {rocks.map((r, i) => (
-        <mesh
-          key={i}
-          geometry={geometry}
-          material={material}
-          position={r.position}
-          rotation={r.rotation}
-          scale={r.size}
-        />
-      ))}
-    </group>
-  )
-}
-useGLTF.preload(ASTEROID_URL)
-
-/* ─── Orbital Camera Rig (scroll-scrubbed loop around the island) ─── */
-// Scroll maps to a full 360° orbit around the floating island at a steady
-// distance, with a gentle height wave so you see it from all angles — top,
-// sides, and a slight dip. No dive-in/dive-out: just a smooth circle.
-function CameraRig() {
-  const scrollProgress = usePortfolioStore((s) => s.scrollProgress)
-
-  useFrame((state) => {
-    const t = THREE.MathUtils.clamp(scrollProgress, 0, 1)
-
-    // Full 360° orbit (plus a little extra so you don't start/end at exactly
-    // the same frame → smoother loop illusion).
-    const theta = t * Math.PI * 2.2
-    const radius = 18 // tighter orbit — island fills more of the frame
-    const camY = 14 + Math.sin(t * Math.PI * 2) * 4 // gentle up/down wave
-
-    state.camera.position.set(
-      Math.sin(theta) * radius,
-      camY,
-      Math.cos(theta) * radius,
-    )
-
-    state.camera.up.set(0, 1, 0)
-    state.camera.lookAt(0, 12, 0)
-  })
-
-  return null
-}
-
-/* ─── BackgroundScene: Manages layering of WebGL Canvases ─── */
-export default function BackgroundScene() {
-  const robotContainerRef = useRef(null)
-
-  return (
-    <>
-      {/* LAYER 1: The Island (Always Behind everything, fixed at z-index 1) */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
-        <Suspense fallback={null}>
-          <Canvas
-            dpr={[1, 1.5]}
-            eventSource={document.body}
-            eventPrefix="client"
-            camera={{ position: [0, 4, 12], fov: 50 }}
-            gl={{ antialias: false, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }}
-            style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
-          >
-            <ambientLight intensity={0.6} />
-            <directionalLight position={[5, 8, 5]} intensity={1.2} />
-            <pointLight position={[-3, 4, -2]} color="#0ea5e9" intensity={0.5} distance={20} />
-
-            {/* Deep space environment */}
-            <Stars radius={140} depth={70} count={6500} factor={4.5} saturation={0} fade speed={0.5} />
-            <Asteroids count={16} />
-
-            <CameraRig />
-            <TourScene />
-          </Canvas>
-        </Suspense>
-      </div>
-
-      {/* LAYER 3: The Robot (Dynamically pops back and forth, z-index 50 or 9999) */}
-      <div 
-        ref={robotContainerRef} 
-        style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }}
-      >
-        <Suspense fallback={null}>
-          <Canvas
-            dpr={[1, 1.5]}
-            eventSource={document.body}
-            eventPrefix="client"
-            camera={{ position: [0, 4, 12], fov: 50 }}
-            gl={{ antialias: false, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }}
-            style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
-          >
-            <ambientLight intensity={0.6} />
-            <directionalLight position={[5, 8, 5]} intensity={1.2} />
-            <pointLight position={[4, 2, 3]} color="#c084fc" intensity={0.4} distance={15} />
-
-            <CameraRig />
-            <RobotVisitor robotContainerRef={robotContainerRef} />
-          </Canvas>
-        </Suspense>
-      </div>
+      <Starfield />
+      <div ref={mountRef} style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }} />
+      <div ref={tauntRef} style={{ position:'fixed',top:'10%',left:'50%',transform:'translateX(-50%)',zIndex:6,pointerEvents:'none',opacity:0,transition:'opacity 0.3s',background:'rgba(0,184,232,0.88)',color:'#fff',padding:'8px 18px',borderRadius:'20px',fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:600,boxShadow:'0 0 24px rgba(0,184,232,0.6)' }} />
     </>
   )
 }

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
-import { Web, GitHub, RocketLaunch, DesignServices, Memory, Storefront, SportsEsports, Extension, PointOfSale, Waves, Launch, Close } from '@mui/icons-material'
+import { Web, GitHub, RocketLaunch, DesignServices, Memory, SportsEsports, Extension, PointOfSale, Waves, Launch, Close, LocalFlorist } from '@mui/icons-material'
 import { ISLANDS } from '../data/islands'
 import { useRobotPush } from '../hooks/useRobotPush'
 
@@ -12,11 +12,11 @@ const ICON_MAP = {
   evently: DesignServices,
   bytebot: RocketLaunch,
   aios: Memory,
-  bitnexel: Storefront,
   tictac: SportsEsports,
   sudoku: Extension,
   cafemaster: PointOfSale,
   aquarium: Waves,
+  onapookkal: LocalFlorist,
 }
 
 /* ─── Magnetic Tilt Hook ─── */
@@ -345,7 +345,7 @@ export default function ProjectsSection() {
             key={project.id}
             project={project}
             index={idx}
-            onClick={setSelected}
+            onClick={(project) => { window.dispatchEvent(new CustomEvent('openProjectDetail', { detail: { projectId: project.id } })) }}
           />
         ))}
       </div>

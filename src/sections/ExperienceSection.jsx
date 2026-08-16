@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import StarBorder from '../components/StarBorder'
-import { useRobotPush } from '../hooks/useRobotPush'
 
 /* ─── Animated Counter ─── */
 function AnimatedCounter({ value, suffix = '' }) {

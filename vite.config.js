@@ -14,11 +14,7 @@ export default defineConfig(({ command }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            // Split Three.js + R3F into its own chunk — loaded only when 3D scene mounts
-            'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
-            // Split MUI icons into its own chunk
             'mui-icons': ['@mui/icons-material', '@mui/material', '@emotion/react', '@emotion/styled'],
-            // Split animation libs
             'animation': ['framer-motion', 'gsap', '@gsap/react'],
           },
         },
