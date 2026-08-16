@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aanand AB — 3D Scroll World</title>
+  <meta name="description" content="Scroll through Aanand AB's projects — a cinematic 3D diorama world." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root, .sw-root {
+      --sw-bg: #020410;
+      --sw-ink: #ffffff;
+      --sw-ink-soft: #64748b;
+      --sw-accent: #38bdf8;
+      --sw-font-display: 'Space Grotesk', sans-serif;
+      --sw-font-body: 'Inter', sans-serif;
+    }
+    html, body { margin: 0; background: #020410; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .sw-copylayer::before {
+      background: linear-gradient(90deg, #020410 0%, rgba(2,4,16,0.85) 34%, rgba(2,4,16,0.45) 62%, transparent 100%) !important;
+    }
+    .sw-copy__title { text-shadow: 0 2px 30px rgba(2,4,16,0.95) !important; }
+    .sw-copy__body { text-shadow: 0 1px 20px rgba(2,4,16,0.95) !important; }
+
+    /* Film grain */
+    .grain {
+      position: fixed; inset: 0; z-index: 997; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* Constellation SVG overlay */
+    #constellation {
+      position: fixed; inset: 0; z-index: 12; pointer-events: none;
+      opacity: 0.15;
+    }
+
+    /* Side nav */
+    #sidenav {
+      position: fixed; right: clamp(10px,2vw,24px); top: 50%;
+      transform: translateY(-50%); z-index: 40;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    #sidenav button {
+      width: 14px; height: 14px; border: none; background: transparent;
+      cursor: pointer; padding: 0; display: grid; place-items: center;
+    }
+    .sn-dot {
+      border-radius: 50%; transition: all 0.3s;
+    }
+
+    /* Contact */
+    #contact {
+      position: relative; z-index: 10;
+      min-height: 60vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 80px 24px;
+      background: linear-gradient(180deg, rgba(2,4,16,0) 0%, #020410 50%);
+    }
+    #contact h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(28px,4.5vw,50px); font-weight: 700;
+      color: #fff; line-height: 1.15; max-width: 640px; margin-bottom: 36px;
+    }
+    #contact h2 span {
+      background: linear-gradient(90deg,#38bdf8,#c084fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .cl { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
+    .cl a {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 28px; border-radius: 12px;
+      font-family: 'JetBrains Mono',monospace; font-size: 13px; text-decoration: none;
+    }
+    .b-gh { border:1px solid rgba(255,255,255,0.1); color:#e2e8f0; background:rgba(5,10,20,0.5); backdrop-filter:blur(10px); }
+    .b-li { border:1px solid rgba(56,189,248,0.3); color:#38bdf8; background:rgba(56,189,248,0.08); backdrop-filter:blur(10px); }
+    .b-em { border:none; background:linear-gradient(135deg,#38bdf8,#c084fc); color:#fff; font-weight:600; box-shadow:0 0 24px rgba(56,189,248,0.25); }
+    .fn { font-family:'JetBrains Mono',monospace; font-size:10px; color:#475569; max-width:500px; }
+    .fn span { color:#334155; }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <!-- Scroll-world engine -->
+  <div id="world"></div>
+
+  <!-- Constellation -->
+  <svg id="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <filter id="g"><feGaussianBlur stdDeviation="0.3"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g id="c-edges" stroke="rgba(56,189,248,0.3)" stroke-width="0.15" stroke-dasharray="0.6 1.2" fill="none"></g>
+    <g id="c-nodes"></g>
+  </svg>
+
+  <!-- Side nav -->
+  <nav id="sidenav"></nav>
+
+  <!-- Contact -->
+  <div id="contact">
+    <h2>All worlds explored.<br/><span>Let's build something together.</span></h2>
+    <div class="cl">
+      <a href="https://github.com/AanandAB" target="_blank" rel="noopener noreferrer" class="b-gh">GitHub →</a>
+      <a href="https://linkedin.com/in/aanandab" target="_blank" rel="noopener noreferrer" class="b-li">LinkedIn →</a>
+      <a href="mailto:aanandab@outlook.com" class="b-em">Email ✉</a>
+    </div>
+    <p class="fn">
+      Built with scroll-world engine · AI-generated diorama clips · Scroll-scrubbed video
+      <br/><span>10 miniature 3D worlds. One continuous scroll experience.</span>
+    </p>
+  </div>
+
+  <script src="scrub-engine.js"></script>
+  <script>
+    const P = [
+      { id:'cafe',       name:'CafePOSPro',       tag:'Full-stack POS',     color:'#38bdf8', cx:13, cy:18 },
+      { id:'theyyam',    name:'Theyyam App',       tag:'Cultural Tourism',  color:'#fbbf24', cx:35, cy:12 },
+      { id:'knightly',   name:'Knightly Chess',    tag:'Web3 Blockchain',   color:'#c084fc', cx:58, cy:25 },
+      { id:'evently',    name:'Evently Connect',   tag:'Landing Page',      color:'#f472b6', cx:80, cy:14 },
+      { id:'bytebot',    name:'Bytebot AI Lab',    tag:'Multi-Agent AI',    color:'#34d399', cx:52, cy:48 },
+      { id:'aios',       name:'AIOS v2.0',         tag:'AI Operating Sys',  color:'#ef4444', cx:20, cy:55 },
+      { id:'tactis',     name:'Tactis',            tag:'Flutter Game',      color:'#84cc16', cx:72, cy:68 },
+      { id:'sudoku',     name:'Sudoku 300',        tag:'Neumorphic Puzzle', color:'#818cf8', cx:85, cy:76 },
+      { id:'cafemaster', name:'Cafe Flutter',      tag:'Restaurant OS',     color:'#f59e0b', cx:30, cy:82 },
+      { id:'aquarium',   name:'Happy Aquarium',    tag:'Cloudflare CMS',    color:'#14b8a6', cx:58, cy:92 },
+    ];
+    const N = P.length;
+
+    // Build constellation
+    const edgesG = document.getElementById('c-edges');
+    for (let i = 0; i < N - 1; i++) {
+      const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1', P[i].cx); l.setAttribute('y1', P[i].cy);
+      l.setAttribute('x2', P[i+1].cx); l.setAttribute('y2', P[i+1].cy);
+      edgesG.appendChild(l);
+    }
+    const nodesG = document.getElementById('c-nodes');
+    P.forEach((p, i) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('data-idx', i);
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', p.cx); c.setAttribute('cy', p.cy);
+      c.setAttribute('r', '1.5'); c.setAttribute('fill', p.color);
+      c.setAttribute('filter', 'url(#g)'); c.classList.add('c-dot');
+      g.appendChild(c);
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', p.cx); t.setAttribute('y', p.cy + 4.5);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('fill', p.color);
+      t.setAttribute('font-family', "'JetBrains Mono',monospace");
+      t.setAttribute('font-size', '1.3'); t.textContent = p.name;
+      t.classList.add('c-label'); g.appendChild(t);
+      nodesG.appendChild(g);
+    });
+
+    // Build side nav
+    const sidenav = document.getElementById('sidenav');
+    P.forEach((p, i) => {
+      const btn = document.createElement('button');
+      btn.title = p.name;
+      const dot = document.createElement('span');
+      dot.className = 'sn-dot';
+      btn.appendChild(dot);
+      btn._dot = dot; btn._color = p.color; btn._idx = i;
+      btn.addEventListener('click', () => {
+        const maxS = document.body.scrollHeight - window.innerHeight;
+        const segW = 4.5 * window.innerHeight; // diveScroll per section
+        const target = segW * (i + 0.3);
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      });
+      sidenav.appendChild(btn);
+    });
+
+    // Mount scroll-world engine
+    mountScrollWorld(document.getElementById('world'), {
+      brand: { name: 'AANAND AB' },
+      hint: 'scroll to fly through projects',
+      diveScroll: 4.5,
+      connScroll: 0,
+      crossfade: 0.08,
+      nav: false,
+      atmosphere: false,
+      sections: P.map((p, i) => ({
+        id: p.id,
+        label: p.name,
+        still: '',
+        clip: `vid/${String(i+1).padStart(2,'0')}-${p.id}.mp4`,
+        accent: p.color,
+        scroll: 4.5,
+        eyebrow: p.tag,
+        title: p.name,
+        body: `Project ${String(i+1).padStart(2,'0')} of ${N}`,
+        tags: [p.tag],
+      })),
+      connectors: [],
+    });
+
+    // Update constellation + nav on scroll
+    let ticking = false;
+    function update() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const progress = maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0;
+        const activeIdx = Math.min(N - 1, Math.floor(progress * N));
+
+        // Edges
+        edgesG.querySelectorAll('line').forEach((l, i) => {
+          l.setAttribute('stroke', i <= activeIdx - 1 ? P[i].color : 'rgba(56,189,248,0.25)');
+          l.setAttribute('opacity', i <= activeIdx - 1 ? '0.5' : '0.2');
+        });
+
+        // Nodes
+        nodesG.querySelectorAll('g').forEach((g, i) => {
+          const active = i <= activeIdx;
+          g.setAttribute('opacity', active ? '1' : '0.1');
+          const dot = g.querySelector('.c-dot');
+          if (dot) dot.setAttribute('r', i === activeIdx ? '2.5' : active ? '1.7' : '1.2');
+          const lbl = g.querySelector('.c-label');
+          if (lbl) {
+            lbl.setAttribute('font-size', i === activeIdx ? '2.0' : '1.2');
+            lbl.setAttribute('fill', i === activeIdx ? P[i].color : 'rgba(255,255,255,0.2)');
+          }
+        });
+
+        // Side nav
+        sidenav.querySelectorAll('button').forEach((btn, i) => {
+          const d = btn._dot;
+          const cur = i === activeIdx;
+          d.style.width = cur ? '9px' : i <= activeIdx ? '6px' : '4px';
+          d.style.height = cur ? '9px' : i <= activeIdx ? '6px' : '4px';
+          d.style.background = cur ? btn._color : i <= activeIdx ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.1)';
+          d.style.boxShadow = cur ? `0 0 10px ${btn._color}80` : 'none';
+        });
+
+        ticking = false;
+      });
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>
